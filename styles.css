@@ -16,3 +16,5 @@
 .energyBuy:hover{color:#fff1bd}
 
 .streak{text-align:center;margin:6px auto 10px;font-weight:700;color:#7b1c18;min-height:22px}
+
+.timeBoost{text-align:center;margin:5px 0}.timeBoost button{margin:2px 4px;padding:6px 10px;border:2px solid #8c641d;border-radius:6px;background:#252018;color:#ffe3a0;font-weight:700;cursor:pointer}
