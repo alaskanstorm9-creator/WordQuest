@@ -126,7 +126,7 @@ function buyEnergy(){
   save();
   alert("+50 Energy! You now have "+state.energy+" Energy.");
 }
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>render(b.dataset.view));const energyBuy=$("#energyBuy");if(energyBuy)energyBuy.onclick=buyEnergy;hud();render("battle");WordQuestDictionary.load().then(n=>console.info(`WordQuest dictionary ready: ${n} words`)).catch(e=>console.warn("Dictionary background load failed",e));
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>render(b.dataset.view));const energyBuy=$("#energyBuy");if(energyBuy)energyBuy.onclick=buyEnergy;hud();render("home");WordQuestDictionary.load().then(n=>console.info(`WordQuest dictionary ready: ${n} words`)).catch(e=>console.warn("Dictionary background load failed",e));
 function boss(stage){
   let [name,icon,type]=BOSSES[stage-1];
   const earlyHp=[45,60,80,105,180];
@@ -134,7 +134,25 @@ function boss(stage){
   return{name,icon,type,max:hp,hp}
 }
 function traitText(type){return {none:"No special ability.",short:"Stone Hide: 2–3 letter words deal 50% less damage.",long:"Cracked Armor: 6+ letter words deal 35% more damage.",four:"Perfect Four: 4-letter words deal 50% more; 7+ deal 25% less.",disable:"Hex: one letter is disabled this battle."}[type]}
-function render(v){if(v==="battle")battle();if(v==="heroes")heroes();if(v==="summon")summon();if(v==="codex")codex();if(v==="store")store()}
+function render(v){if(v==="home")home();if(v==="battle")battle();if(v==="heroes")heroes();if(v==="summon")summon();if(v==="codex")codex();if(v==="store")store()}
+function home(){
+ let b=boss(state.stage);
+ $("#view").innerHTML=`<div class="homeScreen">
+  <section class="homeHero">
+   <div class="homeCopy"><span class="eyebrow">A WORLD OF LIVING LANGUAGE</span><h2>CHAPTER 1<br><strong>GREENVALE</strong></h2>
+   <p>A peaceful valley surrounds the Rootstone World Anchor. Ancient prisons have opened, creatures roam the land, and the Lifeword is beginning to wither.</p>
+   <button class="primary homePlay" id="homePlay">PLAY STORY</button></div>
+   <div class="anchorGlow"><div class="anchorRune">✦</div><b>ROOTSTONE</b><small>WORLD ANCHOR</small></div>
+  </section>
+  <section class="homeStrip">
+   <div><small>CURRENT STAGE</small><b>${state.stage} / 15</b></div>
+   <div><small>NEXT ENEMY</small><b>${b.icon} ${b.name}</b></div>
+   <div><small>CONCORD TEAM</small><b>${state.team.length} / 4 Heroes</b></div>
+   <button class="gold" id="homeHeroes">MANAGE HEROES</button>
+  </section>
+ </div>`;
+ $("#homePlay").onclick=()=>render("battle");$("#homeHeroes").onclick=()=>render("heroes");
+}
 function battle(){let b=boss(state.stage);$("#view").innerHTML=`<div class="panel"><h2 class="title">CHAPTER 1 — GREENVALE</h2><p class="title">Stage ${state.stage} / 15 • ${isBossStage(state.stage)?"Boss: 3:00":"Stage: 1:00"}</p><div class="stagegrid">${BOSSES.map((_,i)=>`<button class="${i+1===state.stage?"current":""}" ${i+1>state.stage?"disabled":""} data-stage="${i+1}">${i+1}</button>`).join("")}</div><div class="boss">${b.icon}</div><h2 class="title">${b.name}</h2><div class="traits"><b>Boss Intel</b><br>${traitText(b.type)}</div><div class="row"><button class="primary" id="start">START — ⚡5</button></div></div>`;$("#start").onclick=startFight;document.querySelectorAll("[data-stage]").forEach(x=>x.onclick=()=>{state.stage=+x.dataset.stage;save();battle()})}
 function teamClassCount(cls){return state.team.filter(id=>HEROES.find(h=>h.id===id)?.class===cls).length}
 function randomBonusTiles(count){let ids=[...Array(16).keys()];for(let i=ids.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}return new Set(ids.slice(0,count))}
@@ -220,7 +238,27 @@ let energyReward=[5,10,15].includes(completed)?25:0;
 if(energyReward&&state.energy<ENERGY_CAP){state.energy+=energyReward;state.lastEnergyTick=Date.now()}
 else if(energyReward)energyReward=0;
 if(state.stage<15)state.stage++;else{state.gems+=250}save();$("#view").innerHTML=`<div class="panel"><h2 class="title">VICTORY!</h2><div class="boss">🏆</div><h3 class="title">${fight.name} defeated</h3><p class="title">🪙 +${reward} Coins</p>${energyReward?`<p class="title">⚡ +${energyReward} Energy milestone reward!</p>`:""}${completed===15?'<p class="title">💎 +250 CHAPTER COMPLETE!</p>':""}<div class="row"><button class="primary" id="continue">CONTINUE</button></div></div>`;$("#continue").onclick=battle}
-function heroes(){$("#view").innerHTML=`<div class="panel"><h2 class="title">HEROES</h2><div class="heroes">${HEROES.map(h=>{let o=state.owned[h.id];return `<div class="card"><div style="font-size:44px">${h.icon}</div><b>${h.name}</b><div class="rarity">${h.rarity} • ${h.class}</div><p><b>${h.theme}-inspired</b></p><p>${h.ability}</p><p class="heroLore">${h.lore}</p>${o?`<p>Lv. ${o.level} • Copies ${o.copies} • Ascension ★${ascensionRank(o.copies)}</p><p>Next duplicate milestones: ${ASCENSION_THRESHOLDS.join(" / ")}</p><button class="gold" data-up="${h.id}">UPGRADE — 🪙100</button>`:"<b>LOCKED</b>"}</div>`}).join("")}</div></div>`;document.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>upgrade(b.dataset.up))}
+let heroFilter="All";
+function heroPortrait(h){return `<div class="heroPortrait ${h.class.toLowerCase()}"><span>${h.icon}</span><i>${h.class==="Mage"?"✦":h.class==="Rogue"?"✣":h.class==="Warrior"?"⚔":"☀"}</i></div>`}
+function heroes(filter=heroFilter){
+ heroFilter=filter;
+ const visible=filter==="All"?HEROES:HEROES.filter(h=>h.class===filter);
+ const ownedCount=HEROES.filter(h=>state.owned[h.id]).length;
+ $("#view").innerHTML=`<div class="panel heroLibrary"><div class="libraryHead"><div><h2>HEROES</h2><p>${ownedCount} / 40 DISCOVERED</p></div>
+ <div class="heroFilters">${["All","Mage","Rogue","Warrior","Cleric"].map(x=>`<button data-filter="${x}" class="${x===filter?"active":""}">${x}</button>`).join("")}</div></div>
+ <div class="heroes">${visible.map(h=>{let o=state.owned[h.id],onTeam=state.team.includes(h.id);return `<div class="card rarity-${h.rarity.toLowerCase()} ${!o?"locked":""}">${heroPortrait(h)}
+ <div class="heroCardTitle"><b>${h.name}</b><span>${h.class}</span></div><div class="rarity">${h.rarity} ${"★".repeat(Math.max(1,ascensionRank(o?.copies||0)+1))}</div>
+ <p class="abilityText">${h.ability}</p><p class="heroLore">${h.lore}</p>
+ ${o?`<p>Lv. ${o.level} • Copies ${o.copies}</p><div class="heroActions"><button class="gold" data-up="${h.id}">UPGRADE 🪙100</button><button data-team="${h.id}" class="${onTeam?"selectedTeam":""}">${onTeam?"✓ TEAM":"ADD TO TEAM"}</button></div>`:"<b>🔒 NOT YET SUMMONED</b>"}</div>`}).join("")}</div></div>`;
+ document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>heroes(b.dataset.filter));
+ document.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>upgrade(b.dataset.up));
+ document.querySelectorAll("[data-team]").forEach(b=>b.onclick=()=>toggleTeam(b.dataset.team));
+}
+function toggleTeam(id){
+ if(state.team.includes(id)){if(state.team.length<=1)return alert("Keep at least one hero on your team.");state.team=state.team.filter(x=>x!==id)}
+ else {if(state.team.length>=4)return alert("Your active team can contain 4 heroes.");state.team.push(id)}
+ save();heroes();
+}
 function upgrade(id){if(state.coins<100)return alert("Need 100 Coins.");state.coins-=100;state.owned[id].level++;save();heroes()}
 function summon(){$("#view").innerHTML=`<div class="panel"><h2 class="title">HERO SUMMON</h2><div class="boss">✨</div><p class="title">Summon heroes. Duplicate heroes increase their copy count for Ascension.</p><div class="row"><button class="gold" data-pull="1">SUMMON ×1<br>💎100</button><button class="primary" data-pull="10">SUMMON ×10<br>💎1,000</button></div><p class="notice" id="pullResult"></p><p class="title">Ultra pity counter: ${state.pity}/50</p></div>`;document.querySelectorAll("[data-pull]").forEach(b=>b.onclick=()=>pull(+b.dataset.pull))}
 function pull(n){
@@ -237,15 +275,19 @@ function pull(n){
  save();summon();$("#pullResult").textContent=out.join(" • ");
 }
 function store(){
- $("#view").innerHTML=`<div class="panel store"><h2 class="title">MARKET OF THE NINE ROADS</h2><p class="title">Supplies gathered where the roads of Olympus and the Nine Realms cross.</p>
+ $("#view").innerHTML=`<div class="panel store"><div class="storeHead"><div><h2>CONCORD SUPPLY HALL</h2><p>Relics and provisions gathered from across Aethera.</p></div><span>SECURE SUPPLIES</span></div>
+ <div class="storeTabs"><button class="active">FEATURED</button><button>RESOURCES</button><button>SUMMON</button><button>PACKS</button></div>
  <div class="storeGrid">
-  <div class="storeCard"><div class="storeArt">⚡</div><h3>Storm Flask</h3><p>+50 Energy. Can overflow 50 if purchased while below the natural cap.</p><button class="primary" id="storeEnergy">💎 25</button></div>
-  <div class="storeCard"><div class="storeArt">💰</div><h3>Dwarven Coin Chest</h3><p>A forge-bound chest containing 500 Coins.</p><button class="gold" data-store="coins">💎 75</button></div>
-  <div class="storeCard"><div class="storeArt">🔮</div><h3>Oracle Gem Pouch</h3><p>Prototype premium-currency pack presentation.</p><button class="gold" data-store="gems">STORE PREVIEW</button></div>
-  <div class="storeCard"><div class="storeArt">🏛️</div><h3>Hero's Journey Pack</h3><p>Future starter bundle: summons, upgrade materials and a guaranteed Rare+ hero.</p><button class="gold" data-store="preview">COMING LATER</button></div>
+  <div class="storeCard"><div class="storeArt energyPotion">⚗️</div><h3>Lifeword Flask</h3><b>+50 Energy</b><p>Restores expedition energy. Purchase while below the natural cap.</p><button class="primary" id="storeEnergy">💎 25</button></div>
+  <div class="storeCard"><div class="storeArt">🪙</div><h3>Concord Coin Chest</h3><b>500 Coins</b><p>Upgrade currency recovered from secured trade roads.</p><button class="gold" data-store="coins">💎 75</button></div>
+  <div class="storeCard"><div class="storeArt">💎</div><h3>Anchor Gem Pouch</h3><b>500 Gems</b><p>Premium-currency pack presentation for the future mobile store.</p><button class="gold" data-store="gems">STORE PREVIEW</button></div>
+  <div class="storeCard"><div class="storeArt">📜</div><h3>Summon Scroll</h3><b>1 Hero Summon</b><p>A rune-bound summons issued by the Concord.</p><button class="gold" data-store="summon">💎 100</button></div>
+  <div class="storeCard featuredPack"><div class="storeArt">🏛️</div><h3>Hero's Journey Pack</h3><b>Starter Bundle Concept</b><p>Future bundle of summons, Energy and upgrade resources.</p><button class="gold" data-store="preview">COMING LATER</button></div>
+  <div class="storeCard"><div class="storeArt">✨</div><h3>World Anchor Cache</h3><b>Event Reward Preview</b><p>Future cache earned during Anchor defense events.</p><button class="gold" data-store="preview">COMING LATER</button></div>
  </div></div>`;
  $("#storeEnergy").onclick=buyEnergy;
  document.querySelector('[data-store="coins"]').onclick=()=>{if(state.gems<75)return alert("Not enough Gems.");state.gems-=75;state.coins+=500;save();store()};
+ document.querySelector('[data-store="summon"]').onclick=()=>pull(1);
  document.querySelectorAll('[data-store="gems"],[data-store="preview"]').forEach(b=>b.onclick=()=>alert("Real-money billing is not enabled in this prototype."));
 }
 function codex(){$("#view").innerHTML=`<div class="panel"><h2 class="title">WORD CODEX</h2><p>Discovered: <b>${state.codex.length}</b></p><div>${state.codex.sort().map(w=>`<span class="codexword">${w}</span>`).join("")||"Find valid words in battle to fill your Codex."}</div><hr><h2 class="title">BESTIARY</h2><p>${state.bestiary.join(" • ")||"Defeat bosses to record them here."}</p></div>`}
