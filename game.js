@@ -1,8 +1,47 @@
 const HEROES=[
-{id:"pip",name:"Pip Rogue",class:"Rogue",rarity:"Common",icon:"🗡️",ability:"3–4 letter words +20%",min:3,max:4,mult:1.2},
-{id:"mira",name:"Mira Mage",class:"Mage",rarity:"Uncommon",icon:"🔮",ability:"5-letter words +35%",min:5,max:5,mult:1.35},
-{id:"aurelia",name:"Aurelia",class:"Warrior",rarity:"Rare",icon:"🏹",ability:"7+ letter words +60%",min:7,max:99,mult:1.6},
-{id:"cinder",name:"Cinder Mage",class:"Mage",rarity:"Ultra",icon:"🔥",ability:"Q, X or Z words ×2",letters:"QXZ",mult:2}
+{id:"pip",name:"Pip Shadowstep",class:"Rogue",rarity:"Common",icon:"🐈‍⬛",ability:"3–4 letter words +20%",min:3,max:4,mult:1.2,theme:"Hermes",lore:"A streetwise courier from Greenvale who stole a rune-key meant for the gods and became the first mortal drawn into the War of Two Pantheons."},
+{id:"skadi",name:"Skadi Runeweaver",class:"Mage",rarity:"Common",icon:"❄️",ability:"4-letter words +15%",min:4,max:4,mult:1.15,theme:"Skadi",lore:"A winter seer who reads prophecy in frost. She believes the broken World-Rune can prevent a second divine war."},
+{id:"leander",name:"Leander Ashshield",class:"Warrior",rarity:"Common",icon:"🛡️",ability:"3-letter words +15%",min:3,max:3,mult:1.15,theme:"Ares",lore:"A disciplined hoplite descended from a disgraced war cult. Leander fights to prove courage need not become cruelty."},
+{id:"lyra",name:"Lyra Dawnkeeper",class:"Cleric",rarity:"Common",icon:"☀️",ability:"5-letter words +15%",min:5,max:5,mult:1.15,theme:"Apollo",lore:"Keeper of a sun-temple whose oracle heard both the Greek Fates and Norse Norns speak the same impossible prophecy."},
+{id:"fen",name:"Fen Quickknife",class:"Rogue",rarity:"Common",icon:"🗡️",ability:"Words ending in S +20%",letters:"S",mult:1.2,theme:"Loki",lore:"A charming thief who claims Loki taught him three lies and one truth. No one agrees which lesson WordQuest is."},
+{id:"runa",name:"Runa Ravensight",class:"Mage",rarity:"Common",icon:"🐦‍⬛",ability:"6+ letter words +20%",min:6,max:99,mult:1.2,theme:"Odin",lore:"A young rune-reader followed by two suspicious ravens. Their visions always point toward the vanished bridge between realms."},
+{id:"brun",name:"Brun Ironoak",class:"Warrior",rarity:"Common",icon:"🪓",ability:"4-letter words +15%",min:4,max:4,mult:1.15,theme:"Thor",lore:"A village smith who forged his hammer from a lightning-split oak and joined Lyra after monsters descended on Greenvale."},
+{id:"nyx",name:"Nyx Alleyshade",class:"Rogue",rarity:"Common",icon:"🌙",ability:"Words with X +50%",letters:"X",mult:1.5,theme:"Nyx",lore:"A night scout from the undercity who can cross guarded streets without casting a shadow."},
+{id:"eir",name:"Eir Kindhand",class:"Cleric",rarity:"Common",icon:"🌿",ability:"4–5 letter words +15%",min:4,max:5,mult:1.15,theme:"Eir",lore:"A battlefield healer who follows the old northern mercy rites and refuses to let the gods spend mortal lives cheaply."},
+{id:"orren",name:"Orren Sparkstaff",class:"Mage",rarity:"Common",icon:"✨",ability:"Words with R +15%",letters:"R",mult:1.15,theme:"Hermes",lore:"An apprentice who discovered that spoken letters can awaken dormant divine runes."},
+
+{id:"mira",name:"Mira Moonscribe",class:"Mage",rarity:"Uncommon",icon:"🔮",ability:"5-letter words +35%",min:5,max:5,mult:1.35,theme:"Hecate",lore:"A moonlit scholar who maps crossroads between Midgard and the Greek underworld. She recognizes Pip's stolen rune-key."},
+{id:"sylvi",name:"Sylvi Foxcloak",class:"Rogue",rarity:"Uncommon",icon:"🦊",ability:"3-letter words +30%",min:3,max:3,mult:1.3,theme:"Loki",lore:"A northern infiltrator whose enchanted cloak was sewn from threads won in a wager with a trickster spirit."},
+{id:"dorian",name:"Dorian Spearborn",class:"Warrior",rarity:"Uncommon",icon:"🔱",ability:"6-letter words +30%",min:6,max:6,mult:1.3,theme:"Athena",lore:"A tactician from an island polis who studies battles as puzzles and suspects the gods are being manipulated."},
+{id:"astrid",name:"Astrid Valkyr",class:"Cleric",rarity:"Uncommon",icon:"🪽",ability:"7+ letter words +30%",min:7,max:99,mult:1.3,theme:"Valkyrie",lore:"A mortal shrine-warden who sees the paths of fallen heroes but has begun finding souls that belong to neither pantheon."},
+{id:"cassia",name:"Cassia Threadcutter",class:"Rogue",rarity:"Uncommon",icon:"✂️",ability:"4-letter words +30%",min:4,max:4,mult:1.3,theme:"Fates",lore:"Once an acolyte of the Fates, Cassia severed a prophecy-thread that condemned her sister and has been hunted ever since."},
+{id:"ulf",name:"Ulf Stormson",class:"Warrior",rarity:"Uncommon",icon:"⚡",ability:"Words with T +25%",letters:"T",mult:1.25,theme:"Thor",lore:"A sailor who survived a thunderbolt at sea and now hears a distant hammer whenever the World-Rune fractures."},
+{id:"thalia",name:"Thalia Hearthsong",class:"Cleric",rarity:"Uncommon",icon:"🔥",ability:"5–6 letter words +25%",min:5,max:6,mult:1.25,theme:"Hestia",lore:"Guardian of the Last Hearth, a neutral sanctuary where northern jarls and southern kings once swore peace."},
+{id:"kestrel",name:"Kestrel Runefoot",class:"Rogue",rarity:"Uncommon",icon:"🪶",ability:"Words with K +40%",letters:"K",mult:1.4,theme:"Hermes",lore:"A messenger who can outrun enchanted wolves and carries fragments of correspondence between Odin and Athena."},
+{id:"bjorn",name:"Bjorn Bronzeheart",class:"Warrior",rarity:"Uncommon",icon:"🐻",ability:"2–3 letter words +25%",min:2,max:3,mult:1.25,theme:"Berserker",lore:"A gentle giant cursed with battle-fury by a broken bear rune. Eir is helping him master it rather than fear it."},
+{id:"calista",name:"Calista Starwise",class:"Mage",rarity:"Uncommon",icon:"🌟",ability:"7+ letter words +35%",min:7,max:99,mult:1.35,theme:"Athena",lore:"An astronomer whose charts show Yggdrasil's branches crossing the constellations of Olympus."},
+
+{id:"aurelia",name:"Aurelia Sunblade",class:"Warrior",rarity:"Rare",icon:"🏹",ability:"7+ letter words +60%",min:7,max:99,mult:1.6,theme:"Apollo",lore:"Champion of the Sun Court and Lyra's estranged sister. She hunts the creature that extinguished their temple's sacred flame."},
+{id:"sigurd",name:"Sigurd Wyrmbane",class:"Warrior",rarity:"Rare",icon:"🐉",ability:"6+ letter words +50%",min:6,max:99,mult:1.5,theme:"Sigurd",lore:"A dragon hunter carrying a blade reforged from the shards of a legendary northern sword."},
+{id:"helena",name:"Helena Owlseer",class:"Mage",rarity:"Rare",icon:"🦉",ability:"4-letter words +45%",min:4,max:4,mult:1.45,theme:"Athena",lore:"Athena's former archivist, exiled after discovering a hidden record describing Ragnarok and the Titanomachy as one repeating event."},
+{id:"freya",name:"Freya Amberveil",class:"Mage",rarity:"Rare",icon:"💎",ability:"Words with F +55%",letters:"F",mult:1.55,theme:"Freyja",lore:"A seidr adept seeking the missing half of the Brisingamen Star, an artifact said to mend broken realms."},
+{id:"thesea",name:"Thesea Labyrinth",class:"Rogue",rarity:"Rare",icon:"🧵",ability:"5-letter words +50%",min:5,max:5,mult:1.5,theme:"Theseus/Ariadne",lore:"A maze-runner carrying an endless golden thread. She believes every corrupted dungeon is part of one impossible labyrinth."},
+{id:"ivar",name:"Ivar Wolfmark",class:"Rogue",rarity:"Rare",icon:"🐺",ability:"Words with I +45%",letters:"I",mult:1.45,theme:"Fenrir",lore:"Marked by Fenrir's rune at birth, Ivar hunts the cult trying to free the great wolf from its final chain."},
+{id:"selene",name:"Selene Silverwell",class:"Cleric",rarity:"Rare",icon:"🌙",ability:"6-letter words +45%",min:6,max:6,mult:1.45,theme:"Selene",lore:"A moon priestess whose healing water reflects memories from both the past and possible futures."},
+{id:"tyrra",name:"Tyrra Oathkeeper",class:"Cleric",rarity:"Rare",icon:"⚖️",ability:"4–6 letter words +35%",min:4,max:6,mult:1.35,theme:"Tyr",lore:"Judge of sacred oaths. Tyrra lost a hand sealing a breach and now bears a runic gauntlet forged by Brun."},
+{id:"orphic",name:"Orphic Echo",class:"Cleric",rarity:"Rare",icon:"🎵",ability:"7+ letter words +50%",min:7,max:99,mult:1.5,theme:"Orpheus",lore:"A wandering singer whose hymns can call memories back from the dead, though each song draws Hades' attention."},
+{id:"vidar",name:"Vidar Silent Rune",class:"Mage",rarity:"Rare",icon:"👢",ability:"Words with V +60%",letters:"V",mult:1.6,theme:"Vidar",lore:"A taciturn rune-mage who studies the silence between spoken words, where he claims the World Eater is hiding."},
+
+{id:"cinder",name:"Cinder Hecaflame",class:"Mage",rarity:"Ultra",icon:"🔥",ability:"Q, X or Z words ×2",letters:"QXZ",mult:2,theme:"Hecate",lore:"Bearer of three witchfires and Mira's vanished mentor. She returned from the crossroads warning that an ancient language is consuming reality."},
+{id:"odin",name:"Odr Rune-King",class:"Mage",rarity:"Ultra",icon:"👁️",ability:"7+ letter words ×1.9",min:7,max:99,mult:1.9,theme:"Odin",lore:"A one-eyed wanderer who traded a crown for forbidden runes. Whether he is a king, god, or impostor remains deliberately unclear."},
+{id:"atalanta",name:"Atalanta Windstep",class:"Rogue",rarity:"Ultra",icon:"🏹",ability:"5–6 letter words ×1.8",min:5,max:6,mult:1.8,theme:"Atalanta",lore:"The fastest hunter of the southern kingdoms. She races Kestrel for sport and monsters for keeps."},
+{id:"loki",name:"Lokir Manyfaces",class:"Rogue",rarity:"Ultra",icon:"🎭",ability:"Words with L ×1.9",letters:"L",mult:1.9,theme:"Loki",lore:"A masked shapeshifter who insists he is not Loki. Unfortunately, three different gods insist that he is."},
+{id:"ajax",name:"Ajax Thunderwall",class:"Warrior",rarity:"Ultra",icon:"🛡️",ability:"4–5 letter words ×1.75",min:4,max:5,mult:1.75,theme:"Ajax",lore:"An undefeated shield-bearer who stood alone when a gate between Olympus and Jotunheim opened over his city."},
+{id:"sigrun",name:"Sigrun Stormwing",class:"Warrior",rarity:"Ultra",icon:"⚔️",ability:"6+ letter words ×1.85",min:6,max:99,mult:1.85,theme:"Valkyrie",lore:"Commander of a lost valkyrie host searching for the warrior souls stolen from Valhalla."},
+{id:"herak",name:"Herak Lionborn",class:"Warrior",rarity:"Ultra",icon:"🦁",ability:"3–4 letter words ×1.7",min:3,max:4,mult:1.7,theme:"Heracles",lore:"A wandering champion completing twelve new labors after learning his famous trials were only preparation."},
+{id:"eirene",name:"Eirene Worldmender",class:"Cleric",rarity:"Ultra",icon:"🕊️",ability:"6+ letter words ×1.75",min:6,max:99,mult:1.75,theme:"Eir/Panacea",lore:"A healer trained in both northern rune-medicine and the lost remedies of Asclepius. She believes the realms themselves can be healed."},
+{id:"valka",name:"Valka Gjallarhorn",class:"Cleric",rarity:"Ultra",icon:"📯",ability:"5-letter words ×1.8",min:5,max:5,mult:1.8,theme:"Heimdall",lore:"Guardian of a shattered horn whose notes reveal invisible bridges between worlds."},
+{id:"themis",name:"Themis Runejudge",class:"Cleric",rarity:"Ultra",icon:"⚖️",ability:"7+ letter words ×1.85",min:7,max:99,mult:1.85,theme:"Themis/Norns",lore:"An oracle who discovered the Norns and Fates are recording the same destiny in different alphabets."}
 ];
 const BOSSES=[
 ["Moss Goblin","👺","none"],["Forest Boar","🐗","short"],["Briar Witch","🧙","long"],["Cave Ogre","👹","four"],["Stonefang","🐺","short"],
@@ -20,6 +59,9 @@ const TIME_BOOST_GEM_COST=15;
 const baseDamage=n=>n<=2?5:n===3?10:n===4?18:n===5?30:n===6?45:n===7?65:90+(n-8)*20;
 let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,coins:500,energy:50,stage:1,owned:{pip:{copies:1,level:1},mira:{copies:1,level:1},aurelia:{copies:1,level:1}},team:["pip","mira","aurelia"],codex:[],bestiary:[],pity:0};
 if(state.energyCap==null)state.energyCap=ENERGY_CAP;
+state.owned=state.owned||{};
+if(!state.owned.lyra)state.owned.lyra={copies:1,level:1};
+if(Array.isArray(state.team)&&state.team.length===3&&state.team.includes("pip")&&state.team.includes("mira")&&state.team.includes("aurelia"))state.team.push("lyra");
 if(state.lastEnergyTick==null)state.lastEnergyTick=Date.now();
 function applyEnergyRegen(){
   const now=Date.now();
@@ -92,7 +134,7 @@ function boss(stage){
   return{name,icon,type,max:hp,hp}
 }
 function traitText(type){return {none:"No special ability.",short:"Stone Hide: 2–3 letter words deal 50% less damage.",long:"Cracked Armor: 6+ letter words deal 35% more damage.",four:"Perfect Four: 4-letter words deal 50% more; 7+ deal 25% less.",disable:"Hex: one letter is disabled this battle."}[type]}
-function render(v){if(v==="battle")battle();if(v==="heroes")heroes();if(v==="summon")summon();if(v==="codex")codex()}
+function render(v){if(v==="battle")battle();if(v==="heroes")heroes();if(v==="summon")summon();if(v==="codex")codex();if(v==="store")store()}
 function battle(){let b=boss(state.stage);$("#view").innerHTML=`<div class="panel"><h2 class="title">CHAPTER 1 — GREENVALE</h2><p class="title">Stage ${state.stage} / 15 • ${isBossStage(state.stage)?"Boss: 3:00":"Stage: 1:00"}</p><div class="stagegrid">${BOSSES.map((_,i)=>`<button class="${i+1===state.stage?"current":""}" ${i+1>state.stage?"disabled":""} data-stage="${i+1}">${i+1}</button>`).join("")}</div><div class="boss">${b.icon}</div><h2 class="title">${b.name}</h2><div class="traits"><b>Boss Intel</b><br>${traitText(b.type)}</div><div class="row"><button class="primary" id="start">START — ⚡5</button></div></div>`;$("#start").onclick=startFight;document.querySelectorAll("[data-stage]").forEach(x=>x.onclick=()=>{state.stage=+x.dataset.stage;save();battle()})}
 function teamClassCount(cls){return state.team.filter(id=>HEROES.find(h=>h.id===id)?.class===cls).length}
 function randomBonusTiles(count){let ids=[...Array(16).keys()];for(let i=ids.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}return new Set(ids.slice(0,count))}
@@ -178,8 +220,32 @@ let energyReward=[5,10,15].includes(completed)?25:0;
 if(energyReward&&state.energy<ENERGY_CAP){state.energy+=energyReward;state.lastEnergyTick=Date.now()}
 else if(energyReward)energyReward=0;
 if(state.stage<15)state.stage++;else{state.gems+=250}save();$("#view").innerHTML=`<div class="panel"><h2 class="title">VICTORY!</h2><div class="boss">🏆</div><h3 class="title">${fight.name} defeated</h3><p class="title">🪙 +${reward} Coins</p>${energyReward?`<p class="title">⚡ +${energyReward} Energy milestone reward!</p>`:""}${completed===15?'<p class="title">💎 +250 CHAPTER COMPLETE!</p>':""}<div class="row"><button class="primary" id="continue">CONTINUE</button></div></div>`;$("#continue").onclick=battle}
-function heroes(){$("#view").innerHTML=`<div class="panel"><h2 class="title">HEROES</h2><div class="heroes">${HEROES.map(h=>{let o=state.owned[h.id];return `<div class="card"><div style="font-size:44px">${h.icon}</div><b>${h.name}</b><div class="rarity">${h.rarity}</div><p>${h.ability}</p>${o?`<p>Lv. ${o.level} • Copies ${o.copies} • Ascension ★${ascensionRank(o.copies)}</p><p>Next duplicate milestones: ${ASCENSION_THRESHOLDS.join(" / ")}</p><button class="gold" data-up="${h.id}">UPGRADE — 🪙100</button>`:"<b>LOCKED</b>"}</div>`}).join("")}</div></div>`;document.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>upgrade(b.dataset.up))}
+function heroes(){$("#view").innerHTML=`<div class="panel"><h2 class="title">HEROES</h2><div class="heroes">${HEROES.map(h=>{let o=state.owned[h.id];return `<div class="card"><div style="font-size:44px">${h.icon}</div><b>${h.name}</b><div class="rarity">${h.rarity} • ${h.class}</div><p><b>${h.theme}-inspired</b></p><p>${h.ability}</p><p class="heroLore">${h.lore}</p>${o?`<p>Lv. ${o.level} • Copies ${o.copies} • Ascension ★${ascensionRank(o.copies)}</p><p>Next duplicate milestones: ${ASCENSION_THRESHOLDS.join(" / ")}</p><button class="gold" data-up="${h.id}">UPGRADE — 🪙100</button>`:"<b>LOCKED</b>"}</div>`}).join("")}</div></div>`;document.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>upgrade(b.dataset.up))}
 function upgrade(id){if(state.coins<100)return alert("Need 100 Coins.");state.coins-=100;state.owned[id].level++;save();heroes()}
 function summon(){$("#view").innerHTML=`<div class="panel"><h2 class="title">HERO SUMMON</h2><div class="boss">✨</div><p class="title">Summon heroes. Duplicate heroes increase their copy count for Ascension.</p><div class="row"><button class="gold" data-pull="1">SUMMON ×1<br>💎100</button><button class="primary" data-pull="10">SUMMON ×10<br>💎1,000</button></div><p class="notice" id="pullResult"></p><p class="title">Ultra pity counter: ${state.pity}/50</p></div>`;document.querySelectorAll("[data-pull]").forEach(b=>b.onclick=()=>pull(+b.dataset.pull))}
-function pull(n){let cost=n*100;if(state.gems<cost)return alert("Not enough Gems.");state.gems-=cost;let out=[];for(let i=0;i<n;i++){state.pity++;let r=Math.random(),h;if(state.pity>=50||r<.03){h=HEROES[3];state.pity=0}else if(r<.18)h=HEROES[2];else if(r<.48)h=HEROES[1];else h=HEROES[0];state.owned[h.id]??={copies:0,level:1};state.owned[h.id].copies++;out.push(h.icon+" "+h.name)}save();summon();$("#pullResult").textContent=out.join(" • ")}
+function pull(n){
+ let cost=n*100;if(state.gems<cost)return alert("Not enough Gems.");
+ state.gems-=cost;let out=[];
+ const pool=r=>HEROES.filter(h=>h.rarity===r);
+ for(let i=0;i<n;i++){
+  state.pity++;let r=Math.random(),rarity;
+  if(state.pity>=50||r<.03){rarity="Ultra";state.pity=0}
+  else if(r<.18)rarity="Rare";else if(r<.48)rarity="Uncommon";else rarity="Common";
+  let p=pool(rarity),h=p[Math.floor(Math.random()*p.length)];
+  state.owned[h.id]??={copies:0,level:1};state.owned[h.id].copies++;out.push(h.icon+" "+h.name);
+ }
+ save();summon();$("#pullResult").textContent=out.join(" • ");
+}
+function store(){
+ $("#view").innerHTML=`<div class="panel store"><h2 class="title">MARKET OF THE NINE ROADS</h2><p class="title">Supplies gathered where the roads of Olympus and the Nine Realms cross.</p>
+ <div class="storeGrid">
+  <div class="storeCard"><div class="storeArt">⚡</div><h3>Storm Flask</h3><p>+50 Energy. Can overflow 50 if purchased while below the natural cap.</p><button class="primary" id="storeEnergy">💎 25</button></div>
+  <div class="storeCard"><div class="storeArt">💰</div><h3>Dwarven Coin Chest</h3><p>A forge-bound chest containing 500 Coins.</p><button class="gold" data-store="coins">💎 75</button></div>
+  <div class="storeCard"><div class="storeArt">🔮</div><h3>Oracle Gem Pouch</h3><p>Prototype premium-currency pack presentation.</p><button class="gold" data-store="gems">STORE PREVIEW</button></div>
+  <div class="storeCard"><div class="storeArt">🏛️</div><h3>Hero's Journey Pack</h3><p>Future starter bundle: summons, upgrade materials and a guaranteed Rare+ hero.</p><button class="gold" data-store="preview">COMING LATER</button></div>
+ </div></div>`;
+ $("#storeEnergy").onclick=buyEnergy;
+ document.querySelector('[data-store="coins"]').onclick=()=>{if(state.gems<75)return alert("Not enough Gems.");state.gems-=75;state.coins+=500;save();store()};
+ document.querySelectorAll('[data-store="gems"],[data-store="preview"]').forEach(b=>b.onclick=()=>alert("Real-money billing is not enabled in this prototype."));
+}
 function codex(){$("#view").innerHTML=`<div class="panel"><h2 class="title">WORD CODEX</h2><p>Discovered: <b>${state.codex.length}</b></p><div>${state.codex.sort().map(w=>`<span class="codexword">${w}</span>`).join("")||"Find valid words in battle to fill your Codex."}</div><hr><h2 class="title">BESTIARY</h2><p>${state.bestiary.join(" • ")||"Defeat bosses to record them here."}</p></div>`}
