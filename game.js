@@ -11,12 +11,17 @@ const BOSSES=[
 ];
 const WORDS=new Set(["AN","AS","AT","BE","BY","DO","GO","HE","IF","IN","IS","IT","ME","MY","NO","OF","ON","OR","OX","SO","TO","UP","US","WE","ACE","ACT","AGE","AIR","ANT","APE","ARC","ART","ASH","ASK","BAD","BAG","BAR","BAT","BED","BEE","BIG","BIT","BOG","BOW","BOX","BOY","BUG","CAN","CAP","CAR","CAT","COW","CRY","DAY","DOG","DRY","EAR","EAT","ELF","END","FAR","FIRE","FISH","GAME","GEM","GOLD","HERO","HIT","ICE","INK","JAM","KEY","KING","LAND","LONG","MAGE","MAP","MOON","OGRE","QUEST","RAGE","RUNE","SHIELD","SWORD","TOWER","WORD","WORDS","WORLD","DRAGON","BATTLE","HUNTER","MAGIC","STONE","STORM","QUESTS","ADVENTURE","KINGDOM"]);
 const baseDamage=n=>n<=2?5:n===3?10:n===4?18:n===5?30:n===6?45:n===7?65:90+(n-8)*20;
-let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,coins:500,energy:30,stage:1,owned:{pip:{copies:1,level:1},mira:{copies:1,level:1},aurelia:{copies:1,level:1}},team:["pip","mira","aurelia"],codex:[],bestiary:[],pity:0};
+let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,coins:500,energy:50,stage:1,owned:{pip:{copies:1,level:1},mira:{copies:1,level:1},aurelia:{copies:1,level:1}},team:["pip","mira","aurelia"],codex:[],bestiary:[],pity:0};
+if(state.energyCap==null)state.energyCap=ENERGY_CAP;
+if(state.energy>ENERGY_CAP)state.energy=ENERGY_CAP;
 let fight=null,selected=[];
 let timerHandle=null;
 const isBossStage=stage=>[5,10,15].includes(stage);
 const stageSeconds=stage=>isBossStage(stage)?180:60;
 const REFRESH_GEM_COST=25;
+const ENERGY_CAP=50;
+const ENERGY_REFILL_COST=25;
+const ENERGY_REFILL_AMOUNT=50;
 function stopTimer(){if(timerHandle){clearInterval(timerHandle);timerHandle=null}}
 function formatTime(sec){let m=Math.floor(sec/60),r=sec%60;return `${m}:${String(r).padStart(2,"0")}`}
 function startTimer(){
@@ -42,8 +47,16 @@ const heroMultiplier=(h,w,copies=1)=>{
   return 1;
 };
 const $=s=>document.querySelector(s); const save=()=>{localStorage.setItem("wordquest-v01",JSON.stringify(state));hud()};
-function hud(){$("#gems").textContent=state.gems;$("#coins").textContent=state.coins;$("#energy").textContent=state.energy}
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>render(b.dataset.view));hud();render("battle");WordQuestDictionary.load().then(n=>console.info(`WordQuest dictionary ready: ${n} words`)).catch(e=>console.warn("Dictionary background load failed",e));
+function hud(){$("#gems").textContent=state.gems;$("#coins").textContent=state.coins;$("#energy").textContent=state.energy;const cap=$("#energyCap");if(cap)cap.textContent=ENERGY_CAP}
+function buyEnergy(){
+  if(state.energy>=ENERGY_CAP)return alert("Energy is already full.");
+  if(state.gems<ENERGY_REFILL_COST)return alert("You need 25 Gems to refill Energy.");
+  state.gems-=ENERGY_REFILL_COST;
+  state.energy=Math.min(ENERGY_CAP,state.energy+ENERGY_REFILL_AMOUNT);
+  save();
+  alert("Energy refilled to "+state.energy+"/"+ENERGY_CAP+"!");
+}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>render(b.dataset.view));const energyBuy=$("#energyBuy");if(energyBuy)energyBuy.onclick=buyEnergy;hud();render("battle");WordQuestDictionary.load().then(n=>console.info(`WordQuest dictionary ready: ${n} words`)).catch(e=>console.warn("Dictionary background load failed",e));
 function boss(stage){
   let [name,icon,type]=BOSSES[stage-1];
   const earlyHp=[45,60,80,105,180];
@@ -72,7 +85,10 @@ function refreshLetters(){
   drawFight();
 }
 function strike(){let w=selected.map(i=>fight.letters[i]).join("");if(w.length<2){$("#notice").textContent="Words need at least 2 letters.";return}if(fight.used.has(w)){ $("#notice").textContent="That word was already used.";return}if(!WordQuestDictionary.isAllowed(w)){ $("#notice").textContent=`${w} is not an allowed WordQuest word.`;return}fight.used.add(w);if(!state.codex.includes(w))state.codex.push(w);let d=baseDamage(w.length);if(fight.type==="short"&&w.length<=3)d*=.5;if(fight.type==="long"&&w.length>=6)d*=1.35;if(fight.type==="four"){if(w.length===4)d*=1.5;if(w.length>=7)d*=.75}state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;d*=heroMultiplier(h,w,o.copies)});d=Math.round(d);fight.hp-=d;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!`;selected=[];save();if(fight.hp<=0)return victory();drawFight()}
-function victory(){stopTimer();let reward=40+state.stage*10;state.coins+=reward;state.bestiary=[...new Set([...state.bestiary,fight.name])];let completed=state.stage;if(state.stage<15)state.stage++;else{state.gems+=250}save();$("#view").innerHTML=`<div class="panel"><h2 class="title">VICTORY!</h2><div class="boss">🏆</div><h3 class="title">${fight.name} defeated</h3><p class="title">🪙 +${reward} Coins</p>${completed===15?'<p class="title">💎 +250 CHAPTER COMPLETE!</p>':""}<div class="row"><button class="primary" id="continue">CONTINUE</button></div></div>`;$("#continue").onclick=battle}
+function victory(){stopTimer();let reward=40+state.stage*10;state.coins+=reward;state.bestiary=[...new Set([...state.bestiary,fight.name])];let completed=state.stage;
+let energyReward=[5,10,15].includes(completed)?25:0;
+if(energyReward)state.energy=Math.min(ENERGY_CAP,state.energy+energyReward);
+if(state.stage<15)state.stage++;else{state.gems+=250}save();$("#view").innerHTML=`<div class="panel"><h2 class="title">VICTORY!</h2><div class="boss">🏆</div><h3 class="title">${fight.name} defeated</h3><p class="title">🪙 +${reward} Coins</p>${energyReward?`<p class="title">⚡ +${energyReward} Energy milestone reward!</p>`:""}${completed===15?'<p class="title">💎 +250 CHAPTER COMPLETE!</p>':""}<div class="row"><button class="primary" id="continue">CONTINUE</button></div></div>`;$("#continue").onclick=battle}
 function heroes(){$("#view").innerHTML=`<div class="panel"><h2 class="title">HEROES</h2><div class="heroes">${HEROES.map(h=>{let o=state.owned[h.id];return `<div class="card"><div style="font-size:44px">${h.icon}</div><b>${h.name}</b><div class="rarity">${h.rarity}</div><p>${h.ability}</p>${o?`<p>Lv. ${o.level} • Copies ${o.copies} • Ascension ★${ascensionRank(o.copies)}</p><p>Next duplicate milestones: ${ASCENSION_THRESHOLDS.join(" / ")}</p><button class="gold" data-up="${h.id}">UPGRADE — 🪙100</button>`:"<b>LOCKED</b>"}</div>`}).join("")}</div></div>`;document.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>upgrade(b.dataset.up))}
 function upgrade(id){if(state.coins<100)return alert("Need 100 Coins.");state.coins-=100;state.owned[id].level++;save();heroes()}
 function summon(){$("#view").innerHTML=`<div class="panel"><h2 class="title">HERO SUMMON</h2><div class="boss">✨</div><p class="title">Summon heroes. Duplicate heroes increase their copy count for Ascension.</p><div class="row"><button class="gold" data-pull="1">SUMMON ×1<br>💎100</button><button class="primary" data-pull="10">SUMMON ×10<br>💎1,000</button></div><p class="notice" id="pullResult"></p><p class="title">Ultra pity counter: ${state.pity}/50</p></div>`;document.querySelectorAll("[data-pull]").forEach(b=>b.onclick=()=>pull(+b.dataset.pull))}
