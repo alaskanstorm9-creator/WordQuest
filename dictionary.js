@@ -8,7 +8,7 @@ const WordQuestDictionary=(()=>{
   const normalize=w=>String(w||"").trim().replace(/^["']|["']$/g,"").toUpperCase();
   const valid=w=>/^[A-Z]{2,15}$/.test(w);
   async function read(url){
-    const r=await fetch(url);
+    const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),5000);const r=await fetch(url,{signal:controller.signal}).finally(()=>clearTimeout(timer));
     if(!r.ok)throw new Error("lexicon unavailable: "+url);
     const text=await r.text();
     return text.split(/\r?\n/).map(normalize).filter(valid);
