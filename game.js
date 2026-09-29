@@ -15,7 +15,7 @@ let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,
 let fight=null,selected=[];\nconst ASCENSION_THRESHOLDS=[1,2,3,5,8];\nconst ascensionRank=copies=>ASCENSION_THRESHOLDS.filter(n=>copies>=n).length;\nconst heroMultiplier=(h,w,copies=1)=>{let rank=ascensionRank(copies),m=h.mult+(rank*.05);if(h.letters&&[...w].some(c=>h.letters.includes(c)))return m;if(h.min&&w.length>=h.min&&w.length<=h.max)return m;return 1};
 const $=s=>document.querySelector(s); const save=()=>{localStorage.setItem("wordquest-v01",JSON.stringify(state));hud()};
 function hud(){$("#gems").textContent=state.gems;$("#coins").textContent=state.coins;$("#energy").textContent=state.energy}
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>render(b.dataset.view));hud();WordQuestDictionary.load().then(()=>render("battle"));
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>render(b.dataset.view));hud();render("battle");WordQuestDictionary.load().then(n=>console.info(`WordQuest dictionary ready: ${n} words`)).catch(e=>console.warn("Dictionary background load failed",e));
 function boss(stage){let [name,icon,type]=BOSSES[stage-1];let hp=Math.round(90*Math.pow(1.28,stage-1));return{name,icon,type,max:hp,hp}}
 function traitText(type){return {none:"No special ability.",short:"Stone Hide: 2–3 letter words deal 50% less damage.",long:"Cracked Armor: 6+ letter words deal 35% more damage.",four:"Perfect Four: 4-letter words deal 50% more; 7+ deal 25% less.",disable:"Hex: one letter is disabled this battle."}[type]}
 function render(v){if(v==="battle")battle();if(v==="heroes")heroes();if(v==="summon")summon();if(v==="codex")codex()}
