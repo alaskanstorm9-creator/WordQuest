@@ -11,3 +11,6 @@
 
 .refreshRow{margin:6px 0 10px}
 .refreshRow .gold{min-width:220px}
+
+.energyBuy{background:transparent;border:0;color:#f6df9b;padding:0;font:700 14px Georgia,serif}
+.energyBuy:hover{color:#fff1bd}
