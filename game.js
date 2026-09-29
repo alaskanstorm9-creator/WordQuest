@@ -98,7 +98,55 @@ function teamClassCount(cls){return state.team.filter(id=>HEROES.find(h=>h.id===
 function randomBonusTiles(count){let ids=[...Array(16).keys()];for(let i=ids.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}return new Set(ids.slice(0,count))}
 function startFight(){if(state.energy<5)return alert("Not enough Story Energy.");state.energy-=5;save();fight=boss(state.stage);fight.disabled=fight.type==="disable"?"E":"";fight.used=new Set();fight.timeLeft=stageSeconds(state.stage);fight.refreshes=0;fight.streakLetter="";fight.streakCount=0;fight.timeBoostUsed=false;let mageCount=teamClassCount("Mage");fight.mageTimeBonus=mageCount>=4?25:mageCount>=2?10:0;fight.timeLeft+=fight.mageTimeBonus;let rogueCount=teamClassCount("Rogue");fight.rogueBonusCount=rogueCount>=4?6:rogueCount>=2?2:0;fight.rogueBonusTiles=randomBonusTiles(fight.rogueBonusCount);let warriorCount=teamClassCount("Warrior");fight.warriorDamage=warriorCount>=4?10:warriorCount>=2?5:0;let clericCount=teamClassCount("Cleric");fight.clericExtraRerolls=clericCount>=2?1:0;fight.clericGoldBonus=clericCount>=4?.20:0;fight.letters=board();selected=[];drawFight();startTimer()}
 function board(){let vowels="AAAAAAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEEEEIIIIIIIIIIIIOOOOOOOOOOUUUUU",consonants="BBBBCCCDDDDDDFFFFFFFFGGGGGHHHHHHJKLLLLLMMMMNNNNNNNNPPPPQRRRRRRRRRSSSSSSSSTTTTTTTTTVVWWXYYZ";let a=[];for(let i=0;i<6;i++)a.push(vowels[Math.floor(Math.random()*vowels.length)]);for(let i=0;i<10;i++)a.push(consonants[Math.floor(Math.random()*consonants.length)]);for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function drawFight(){if(!fight.letters)fight.letters=board();$("#view").innerHTML=`<div class="panel"><p class="title">STAGE ${state.stage} • ${fight.name} ${isBossStage(state.stage)?"• BOSS BATTLE":""}</p><div class="timeBoost">${fight&&!fight.timeBoostUsed?`<button onclick="addTimeBoost(\'ad\')">▶ AD +30s</button><button onclick="addTimeBoost(\'gems\')">💎 15 +30s</button>`:""}</div><div class="combatTimer">⏱ <span id="timer">${formatTime(fight.timeLeft)}</span></div><div class="synergy">${fight.mageTimeBonus?`🔮 Mage Synergy: +${fight.mageTimeBonus}s`:""}${fight.mageTimeBonus&&fight.rogueBonusCount?" • ":""}${fight.rogueBonusCount?`🗡️ Rogue Synergy: ${fight.rogueBonusCount} ×2 tiles`:""}${fight.warriorDamage?` • ⚔️ Warrior Synergy: +${fight.warriorDamage} damage`:""}${fight.clericExtraRerolls?` • ✨ Cleric Synergy: +1 free reroll${fight.clericGoldBonus?" • +20% Coins":""}`:""}</div><div class="boss">${fight.icon}</div><div class="hp"><div style="width:${Math.max(0,fight.hp/fight.max*100)}%"></div></div><p class="title">${Math.max(0,fight.hp)} / ${fight.max} HP</p><div class="traits">${traitText(fight.type)} ${fight.disabled?`<b>Disabled: ${fight.disabled}</b>`:""}</div><div class="damage" id="damage"></div><div class="streak">🔥 Letter Streak: ${fight.streakCount>1?`${fight.streakLetter} ×${fight.streakCount} • +${(fight.streakCount-1)*10}% damage`:"Start consecutive words with the same letter"}</div><div class="word" id="word"></div><div class="row refreshRow"><button class="gold" id="refresh">🔄 NEW LETTERS — ${fight.refreshes<(1+(fight.clericExtraRerolls||0))?"FREE":"💎"+REFRESH_GEM_COST}</button></div><div class="letters">${fight.letters.map((l,i)=>`<button class="tile ${fight.rogueBonusTiles?.has(i)?"bonusTile":""}" data-i="${i}" ${l===fight.disabled?"disabled":""}>${l}${fight.rogueBonusTiles?.has(i)?`<small>×2</small>`:""}</button>`).join("")}</div><div class="row"><button class="gold" id="clear">CLEAR</button><button class="primary" id="submit">STRIKE</button></div><p class="notice" id="notice">Build words from this board before time runs out.</p></div>`;document.querySelectorAll(".tile").forEach(x=>x.onclick=()=>pick(+x.dataset.i));$("#clear").onclick=()=>{selected=[];syncWord()};$("#refresh").onclick=refreshLetters;$("#submit").onclick=strike}
+function activeSynergyText(){
+  let parts=[];
+  if(fight.mageTimeBonus)parts.push(`🔮 Mage +${fight.mageTimeBonus}s`);
+  if(fight.rogueBonusCount)parts.push(`🗡️ Rogue ${fight.rogueBonusCount} ×2 tiles`);
+  if(fight.warriorDamage)parts.push(`⚔️ Warrior +${fight.warriorDamage} damage`);
+  if(fight.clericExtraRerolls)parts.push(`✨ Cleric +1 free reroll${fight.clericGoldBonus?" +20% Coins":""}`);
+  return parts.length?parts.join(" • "):"No Class Synergy Active";
+}
+function drawFight(){
+  if(!fight.letters)fight.letters=board();
+  const teamCards=state.team.map(id=>{
+    const h=HEROES.find(x=>x.id===id),o=state.owned[id];
+    if(!h||!o)return "";
+    return `<div class="combatHero"><div class="heroIcon">${h.icon}</div><div><b>${h.name}</b><small>${h.class||"Hero"} • Lv ${o.level}</small><div class="abilityBar"><i style="width:0%"></i></div></div></div>`;
+  }).join("");
+  $("#view").innerHTML=`<div class="battleScene">
+    <div class="battleTop">
+      <div><small>CHAPTER 1 • GREENVALE</small><b>Stage ${state.stage} / 15</b></div>
+      <div class="enemyName">${fight.name}</div>
+      <div class="combatTimer">⏱ <span id="timer">${formatTime(fight.timeLeft)}</span></div>
+    </div>
+    <div class="enemyHp"><div style="width:${Math.max(0,fight.hp/fight.max*100)}%"></div><span>${Math.max(0,fight.hp)} / ${fight.max} HP</span></div>
+    <div class="arena">
+      <div class="bossArt">${fight.icon}</div>
+      <div class="bossIntel"><b>Boss Intel</b><br>${traitText(fight.type)} ${fight.disabled?`<strong>Disabled: ${fight.disabled}</strong>`:""}</div>
+    </div>
+    <div class="synergyBanner">${activeSynergyText()}</div>
+    <div class="battleBody">
+      <div class="teamRail">${teamCards}</div>
+      <div class="boardArea">
+        <div class="streak">🔥 Letter Streak: ${fight.streakCount>1?`${fight.streakLetter} ×${fight.streakCount} • +${(fight.streakCount-1)*10}% damage`:"Start consecutive words with the same letter"}</div>
+        <div class="word" id="word"></div>
+        <div class="row refreshRow"><button class="gold" id="refresh">🔄 NEW LETTERS — ${fight.refreshes<(1+(fight.clericExtraRerolls||0))?"FREE":"💎"+REFRESH_GEM_COST}</button></div>
+        <div class="letters">${fight.letters.map((l,i)=>`<button class="tile ${fight.rogueBonusTiles?.has(i)?"bonusTile":""}" data-i="${i}" ${l===fight.disabled?"disabled":""}><span>${l}</span>${fight.rogueBonusTiles?.has(i)?`<small>×2</small>`:""}</button>`).join("")}</div>
+        <div class="damage" id="damage"></div>
+        <div class="row actionRow"><button class="gold" id="clear">CLEAR</button><button class="primary strikeBtn" id="submit">⚔ STRIKE</button></div>
+        <p class="notice" id="notice">Click letters in order to build your word.</p>
+      </div>
+      <div class="boostRail">
+        <b>+30 SECONDS</b><small>One time per battle</small>
+        ${!fight.timeBoostUsed?`<button onclick="addTimeBoost('ad')">▶ WATCH AD</button><span>OR</span><button onclick="addTimeBoost('gems')">💎 15 GEMS</button>`:`<div class="boostUsed">TIME BOOST USED</div>`}
+      </div>
+    </div>
+  </div>`;
+  document.querySelectorAll(".tile").forEach(x=>x.onclick=()=>pick(+x.dataset.i));
+  $("#clear").onclick=()=>{selected=[];syncWord()};
+  $("#refresh").onclick=refreshLetters;
+  $("#submit").onclick=strike;
+}
 function pick(i){let p=selected.indexOf(i);p>=0?selected.splice(p,1):selected.push(i);syncWord()}
 function syncWord(){let w=selected.map(i=>fight.letters[i]).join("");$("#word").textContent=w;document.querySelectorAll(".tile").forEach((x,i)=>x.classList.toggle("selected",selected.includes(i)))}
 function refreshLetters(){
