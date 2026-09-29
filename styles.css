@@ -14,3 +14,5 @@
 
 .energyBuy{background:transparent;border:0;color:#f6df9b;padding:0;font:700 14px Georgia,serif}
 .energyBuy:hover{color:#fff1bd}
+
+.streak{text-align:center;margin:6px auto 10px;font-weight:700;color:#7b1c18;min-height:22px}
