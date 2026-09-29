@@ -13,7 +13,22 @@ const WORDS=new Set(["AN","AS","AT","BE","BY","DO","GO","HE","IF","IN","IS","IT"
 const baseDamage=n=>n<=2?5:n===3?10:n===4?18:n===5?30:n===6?45:n===7?65:90+(n-8)*20;
 let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,coins:500,energy:50,stage:1,owned:{pip:{copies:1,level:1},mira:{copies:1,level:1},aurelia:{copies:1,level:1}},team:["pip","mira","aurelia"],codex:[],bestiary:[],pity:0};
 if(state.energyCap==null)state.energyCap=ENERGY_CAP;
-if(state.energy>ENERGY_CAP)state.energy=ENERGY_CAP;
+if(state.lastEnergyTick==null)state.lastEnergyTick=Date.now();
+function applyEnergyRegen(){
+  const now=Date.now();
+  if(state.energy>=ENERGY_CAP){state.lastEnergyTick=now;return 0}
+  const elapsed=now-state.lastEnergyTick;
+  const gained=Math.floor(elapsed/ENERGY_REGEN_MS);
+  if(gained>0){
+    const before=state.energy;
+    state.energy=Math.min(ENERGY_CAP,state.energy+gained);
+    const actual=state.energy-before;
+    state.lastEnergyTick=state.energy>=ENERGY_CAP?now:state.lastEnergyTick+(actual*ENERGY_REGEN_MS);
+    return actual;
+  }
+  return 0;
+}
+applyEnergyRegen();
 let fight=null,selected=[];
 let timerHandle=null;
 const isBossStage=stage=>[5,10,15].includes(stage);
@@ -22,6 +37,7 @@ const REFRESH_GEM_COST=25;
 const ENERGY_CAP=50;
 const ENERGY_REFILL_COST=25;
 const ENERGY_REFILL_AMOUNT=50;
+const ENERGY_REGEN_MS=2*60*1000;
 function stopTimer(){if(timerHandle){clearInterval(timerHandle);timerHandle=null}}
 function formatTime(sec){let m=Math.floor(sec/60),r=sec%60;return `${m}:${String(r).padStart(2,"0")}`}
 function startTimer(){
@@ -47,14 +63,16 @@ const heroMultiplier=(h,w,copies=1)=>{
   return 1;
 };
 const $=s=>document.querySelector(s); const save=()=>{localStorage.setItem("wordquest-v01",JSON.stringify(state));hud()};
+setInterval(()=>{const gained=applyEnergyRegen();if(gained){save()}else hud()},1000);
 function hud(){$("#gems").textContent=state.gems;$("#coins").textContent=state.coins;$("#energy").textContent=state.energy;const cap=$("#energyCap");if(cap)cap.textContent=ENERGY_CAP}
 function buyEnergy(){
-  if(state.energy>=ENERGY_CAP)return alert("Energy is already full.");
-  if(state.gems<ENERGY_REFILL_COST)return alert("You need 25 Gems to refill Energy.");
+  if(state.energy>=ENERGY_CAP)return alert("Energy must be below 50 before you can buy more.");
+  if(state.gems<ENERGY_REFILL_COST)return alert("You need 25 Gems to buy 50 Energy.");
   state.gems-=ENERGY_REFILL_COST;
-  state.energy=Math.min(ENERGY_CAP,state.energy+ENERGY_REFILL_AMOUNT);
+  state.energy+=ENERGY_REFILL_AMOUNT;
+  state.lastEnergyTick=Date.now();
   save();
-  alert("Energy refilled to "+state.energy+"/"+ENERGY_CAP+"!");
+  alert("+50 Energy! You now have "+state.energy+" Energy.");
 }
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>render(b.dataset.view));const energyBuy=$("#energyBuy");if(energyBuy)energyBuy.onclick=buyEnergy;hud();render("battle");WordQuestDictionary.load().then(n=>console.info(`WordQuest dictionary ready: ${n} words`)).catch(e=>console.warn("Dictionary background load failed",e));
 function boss(stage){
@@ -87,7 +105,8 @@ function refreshLetters(){
 function strike(){let w=selected.map(i=>fight.letters[i]).join("");if(w.length<2){$("#notice").textContent="Words need at least 2 letters.";return}if(fight.used.has(w)){ $("#notice").textContent="That word was already used.";return}if(!WordQuestDictionary.isAllowed(w)){ $("#notice").textContent=`${w} is not an allowed WordQuest word.`;return}fight.used.add(w);if(!state.codex.includes(w))state.codex.push(w);let d=baseDamage(w.length);if(fight.type==="short"&&w.length<=3)d*=.5;if(fight.type==="long"&&w.length>=6)d*=1.35;if(fight.type==="four"){if(w.length===4)d*=1.5;if(w.length>=7)d*=.75}state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;d*=heroMultiplier(h,w,o.copies)});d=Math.round(d);fight.hp-=d;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!`;selected=[];save();if(fight.hp<=0)return victory();drawFight()}
 function victory(){stopTimer();let reward=40+state.stage*10;state.coins+=reward;state.bestiary=[...new Set([...state.bestiary,fight.name])];let completed=state.stage;
 let energyReward=[5,10,15].includes(completed)?25:0;
-if(energyReward)state.energy=Math.min(ENERGY_CAP,state.energy+energyReward);
+if(energyReward&&state.energy<ENERGY_CAP){state.energy+=energyReward;state.lastEnergyTick=Date.now()}
+else if(energyReward)energyReward=0;
 if(state.stage<15)state.stage++;else{state.gems+=250}save();$("#view").innerHTML=`<div class="panel"><h2 class="title">VICTORY!</h2><div class="boss">🏆</div><h3 class="title">${fight.name} defeated</h3><p class="title">🪙 +${reward} Coins</p>${energyReward?`<p class="title">⚡ +${energyReward} Energy milestone reward!</p>`:""}${completed===15?'<p class="title">💎 +250 CHAPTER COMPLETE!</p>':""}<div class="row"><button class="primary" id="continue">CONTINUE</button></div></div>`;$("#continue").onclick=battle}
 function heroes(){$("#view").innerHTML=`<div class="panel"><h2 class="title">HEROES</h2><div class="heroes">${HEROES.map(h=>{let o=state.owned[h.id];return `<div class="card"><div style="font-size:44px">${h.icon}</div><b>${h.name}</b><div class="rarity">${h.rarity}</div><p>${h.ability}</p>${o?`<p>Lv. ${o.level} • Copies ${o.copies} • Ascension ★${ascensionRank(o.copies)}</p><p>Next duplicate milestones: ${ASCENSION_THRESHOLDS.join(" / ")}</p><button class="gold" data-up="${h.id}">UPGRADE — 🪙100</button>`:"<b>LOCKED</b>"}</div>`}).join("")}</div></div>`;document.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>upgrade(b.dataset.up))}
 function upgrade(id){if(state.coins<100)return alert("Need 100 Coins.");state.coins-=100;state.owned[id].level++;save();heroes()}
