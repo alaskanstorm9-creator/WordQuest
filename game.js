@@ -12,7 +12,15 @@ const BOSSES=[
 const WORDS=new Set(["AN","AS","AT","BE","BY","DO","GO","HE","IF","IN","IS","IT","ME","MY","NO","OF","ON","OR","OX","SO","TO","UP","US","WE","ACE","ACT","AGE","AIR","ANT","APE","ARC","ART","ASH","ASK","BAD","BAG","BAR","BAT","BED","BEE","BIG","BIT","BOG","BOW","BOX","BOY","BUG","CAN","CAP","CAR","CAT","COW","CRY","DAY","DOG","DRY","EAR","EAT","ELF","END","FAR","FIRE","FISH","GAME","GEM","GOLD","HERO","HIT","ICE","INK","JAM","KEY","KING","LAND","LONG","MAGE","MAP","MOON","OGRE","QUEST","RAGE","RUNE","SHIELD","SWORD","TOWER","WORD","WORDS","WORLD","DRAGON","BATTLE","HUNTER","MAGIC","STONE","STORM","QUESTS","ADVENTURE","KINGDOM"]);
 const baseDamage=n=>n<=2?5:n===3?10:n===4?18:n===5?30:n===6?45:n===7?65:90+(n-8)*20;
 let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,coins:500,energy:30,stage:1,owned:{pip:{copies:1,level:1},mira:{copies:1,level:1},aurelia:{copies:1,level:1}},team:["pip","mira","aurelia"],codex:[],bestiary:[],pity:0};
-let fight=null,selected=[];\nconst ASCENSION_THRESHOLDS=[1,2,3,5,8];\nconst ascensionRank=copies=>ASCENSION_THRESHOLDS.filter(n=>copies>=n).length;\nconst heroMultiplier=(h,w,copies=1)=>{let rank=ascensionRank(copies),m=h.mult+(rank*.05);if(h.letters&&[...w].some(c=>h.letters.includes(c)))return m;if(h.min&&w.length>=h.min&&w.length<=h.max)return m;return 1};
+let fight=null,selected=[];
+const ASCENSION_THRESHOLDS=[1,2,3,5,8];
+const ascensionRank=copies=>ASCENSION_THRESHOLDS.filter(n=>copies>=n).length;
+const heroMultiplier=(h,w,copies=1)=>{
+  let rank=ascensionRank(copies),m=h.mult+(rank*.05);
+  if(h.letters&&[...w].some(c=>h.letters.includes(c)))return m;
+  if(h.min&&w.length>=h.min&&w.length<=h.max)return m;
+  return 1;
+};
 const $=s=>document.querySelector(s); const save=()=>{localStorage.setItem("wordquest-v01",JSON.stringify(state));hud()};
 function hud(){$("#gems").textContent=state.gems;$("#coins").textContent=state.coins;$("#energy").textContent=state.energy}
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>render(b.dataset.view));hud();render("battle");WordQuestDictionary.load().then(n=>console.info(`WordQuest dictionary ready: ${n} words`)).catch(e=>console.warn("Dictionary background load failed",e));
