@@ -62,6 +62,7 @@ if(state.energyCap==null)state.energyCap=ENERGY_CAP;
 if(state.rarePity==null)state.rarePity=0;
 if(state.summonAnimation==null)state.summonAnimation="full";
 if(state.tutorialComplete==null)state.tutorialComplete=false;
+state.redeemedCodes=state.redeemedCodes||[];
 const ACCOUNT_KEY="wordquest-account-v01";
 let account=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"null");
 function accountId(){return "WQ-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,7).toUpperCase()}
@@ -198,9 +199,25 @@ function home(){
    <div><small>NEXT ENEMY</small><b>${b.icon} ${b.name}</b></div>
    <div><small>CONCORD TEAM</small><b>${state.team.length} / 4 Heroes</b></div>
    <button class="gold" id="homeHeroes">MANAGE HEROES</button>
+   <button class="gold" id="giftCodes">🎁 GIFT CODE</button>
   </section>
  </div>`;
- $("#homePlay").onclick=()=>render("battle");$("#homeHeroes").onclick=()=>render("heroes");
+ $("#homePlay").onclick=()=>render("battle");$("#homeHeroes").onclick=()=>render("heroes");const gc=$("#giftCodes");if(gc)gc.onclick=giftCode;
+}
+const GIFT_CODES={
+ "WQDEVGEMS":{gems:10000,label:"Developer Summon Cache"},
+ "WELCOME1000":{gems:1000,label:"Welcome Gem Gift"}
+};
+function giftCode(){
+ $("#view").innerHTML=`<div class="panel giftCodePanel"><div class="giftRune">🎁</div><h2 class="title">REDEEM GIFT CODE</h2><p class="title">Enter a WordQuest gift code to claim its reward.</p><div class="giftEntry"><input id="giftInput" maxlength="32" placeholder="ENTER CODE" autocomplete="off"><button class="primary" id="redeemGift">REDEEM</button></div><p class="notice" id="giftNotice">Codes are not case-sensitive.</p><div class="row"><button class="gold" id="giftBack">BACK HOME</button></div></div>`;
+ $("#giftBack").onclick=home;$("#redeemGift").onclick=redeemGiftCode;$("#giftInput").onkeydown=e=>{if(e.key==="Enter")redeemGiftCode()};
+}
+function redeemGiftCode(){
+ const input=$("#giftInput"),notice=$("#giftNotice"),code=(input.value||"").trim().toUpperCase(),reward=GIFT_CODES[code];
+ if(!reward){notice.textContent="That gift code is invalid.";notice.className="notice giftError";return}
+ if(state.redeemedCodes.includes(code)){notice.textContent="This code has already been redeemed on this save.";notice.className="notice giftError";return}
+ state.redeemedCodes.push(code);state.gems+=reward.gems||0;save();
+ notice.innerHTML=`🎉 <b>${reward.label}</b> claimed! 💎 +${reward.gems.toLocaleString()} Gems`;notice.className="notice giftSuccess";input.value="";
 }
 function tutorialIntro(){
  stopTimer();
