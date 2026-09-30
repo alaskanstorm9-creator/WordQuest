@@ -63,6 +63,9 @@ if(state.rarePity==null)state.rarePity=0;
 if(state.summonAnimation==null)state.summonAnimation="full";
 if(state.tutorialComplete==null)state.tutorialComplete=false;
 state.redeemedCodes=state.redeemedCodes||[];
+if(state.accountLevel==null)state.accountLevel=1;
+if(state.accountXp==null)state.accountXp=0;
+if(state.accountXpSources==null)state.accountXpSources={story:0,worldBoss:0,pvp:0};
 if(!state.owned.lyra)state.owned.lyra={copies:1,level:1};
 const ACCOUNT_KEY="wordquest-account-v01";
 let account=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"null");
@@ -150,13 +153,71 @@ function timeUp(){
   $("#retry").onclick=battle;
 }
 const ASCENSION_THRESHOLDS=[1,2,3,5,8];
-const ascensionRank=copies=>ASCENSION_THRESHOLDS.filter(n=>copies>=n).length;
-const heroMultiplier=(h,w,copies=1)=>{
-  let rank=ascensionRank(copies),m=h.mult+(rank*.05);
-  if(h.letters&&[...w].some(c=>h.letters.includes(c)))return m;
-  if(h.min&&w.length>=h.min&&w.length<=h.max)return m;
-  return 1;
+const ascensionRank=copies=>Math.min(5,ASCENSION_THRESHOLDS.filter(n=>copies>=n).length);
+const ASCENSION_LETTERS={
+ Common:["Q","X","Z","J","V"],
+ Uncommon:["K","W","Y","F","B","G","P","H"],
+ Rare:["S","T","N","R","L","D","M","C"],
+ Ultra:["A","E","I","O","U"]
 };
+const ASCENSION_GROWTH={Common:.02,Uncommon:.03,Rare:.04,Ultra:.05};
+const ASCENSION_LETTER_BONUS={
+ Common:[0,0,.10,.15,.20],Uncommon:[0,0,.10,.15,.20],
+ Rare:[0,0,.10,.15,.20],Ultra:[0,0,.08,.12,.15]
+};
+function heroAscensionLetter(h){
+ const pool=ASCENSION_LETTERS[h.rarity]||["Q"];
+ const peers=HEROES.filter(x=>x.rarity===h.rarity);
+ return pool[Math.max(0,peers.findIndex(x=>x.id===h.id))%pool.length];
+}
+function primaryTriggers(h,w){
+ if(h.letters&&[...w].some(c=>h.letters.includes(c)))return true;
+ return !!(h.min&&w.length>=h.min&&w.length<=h.max);
+}
+function heroStarData(h,star){
+ star=Math.max(1,Math.min(5,star));
+ const basePct=Math.round((h.mult-1)*100);
+ const growth=Math.round((ASCENSION_GROWTH[h.rarity]||.02)*100);
+ const primaryPct=basePct+growth*(star-1);
+ const letter=heroAscensionLetter(h);
+ const letterPct=Math.round((ASCENSION_LETTER_BONUS[h.rarity]?.[star-1]||0)*100);
+ return {star,primaryPct,letter,letterPct};
+}
+const heroMultiplier=(h,w,copies=1)=>{
+ const star=ascensionRank(copies)||1,d=heroStarData(h,star);
+ let m=primaryTriggers(h,w)?1+d.primaryPct/100:1;
+ if(d.letterPct&&w.includes(d.letter))m*=1+d.letterPct/100;
+ return m;
+};
+
+// Account XP pacing targets: fast onboarding, then a long-tail journey toward Level 100.
+function accountXpForLevel(level){
+ level=Math.max(1,Math.min(100,level));
+ if(level<=10)return Math.round((level-1)*4000/9);          // ~4 strong-play hours at ~1k XP/hr
+ if(level<=20)return Math.round(4000+(level-10)*20000/10); // ~24 cumulative hours
+ const t=(level-20)/80;
+ return Math.round(24000+126000*Math.pow(t,1.55));          // long-tail: Level 100 = 150k XP
+}
+function accountLevelFromXp(xp){
+ let level=1;while(level<100&&xp>=accountXpForLevel(level+1))level++;return level;
+}
+function accountDamageMultiplier(level=state.accountLevel||1){
+ if(level<=10)return 1+(level-1)*.02;
+ if(level<=20)return 1.18+(level-10)*.01;
+ if(level<=50)return 1.28+(level-20)*.005;
+ return 1.43+(level-50)*.0025;
+}
+function grantAccountXp(amount,source){
+ if(!amount||amount<1)return 0;
+ state.accountXp+=Math.round(amount);state.accountXpSources[source]=(state.accountXpSources[source]||0)+Math.round(amount);
+ const before=state.accountLevel;state.accountLevel=accountLevelFromXp(state.accountXp);
+ return state.accountLevel-before;
+}
+function accountProgressText(){
+ const lv=state.accountLevel||1,next=lv<100?accountXpForLevel(lv+1):accountXpForLevel(100);
+ const pct=lv>=100?100:Math.max(0,Math.min(100,Math.round((state.accountXp-accountXpForLevel(lv))/(next-accountXpForLevel(lv))*100)));
+ return `Level ${lv} • ×${accountDamageMultiplier(lv).toFixed(3)} damage • ${lv>=100?"MAX LEVEL":pct+"% to Level "+(lv+1)}`;
+}
 const $=s=>document.querySelector(s); const save=()=>{localStorage.setItem("wordquest-v01",JSON.stringify(state));hud()};
 setInterval(()=>{const gained=applyEnergyRegen();if(gained){save()}else hud()},1000);
 function hud(){$("#gems").textContent=state.gems;$("#coins").textContent=state.coins;$("#energy").textContent=state.energy;const cap=$("#energyCap");if(cap)cap.textContent=ENERGY_CAP}
@@ -227,6 +288,7 @@ function home(){
    <div><small>CURRENT STAGE</small><b>${state.stage} / 15</b></div>
    <div><small>NEXT ENEMY</small><b>${b.icon} ${b.name}</b></div>
    <div><small>CONCORD TEAM</small><b>${state.team.length} / 4 Heroes</b></div>
+   <div><small>ACCOUNT POWER</small><b>${accountProgressText()}</b></div>
    <button class="gold" id="homeHeroes">MANAGE HEROES</button>
    <button class="gold" id="giftCodes">🎁 GIFT CODE</button>
   </section>
@@ -339,12 +401,13 @@ else{fight.streakLetter=first;fight.streakCount=1}
 let streakBonus=1+Math.max(0,fight.streakCount-1)*0.10;
 let rogueHits=selected.filter(i=>fight.rogueBonusTiles?.has(i)).length;
 let rogueBonus=Math.pow(2,rogueHits);
-let d=baseDamage(w.length);if(fight.type==="cursedInitials"&&fight.cursedInitials?.includes(w[0]))d*=.5;let lengthResist=w.length<=5?(fight.lengthResistance?.[w.length]||0):0;if(lengthResist)d*=1-lengthResist;state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;d*=heroMultiplier(h,w,o.copies)});d=Math.round(d*streakBonus*rogueBonus)+(fight.warriorDamage||0);fight.hp-=d;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!${fight.streakCount>1?` 🔥 ${first} STREAK ×${fight.streakCount} (+${(fight.streakCount-1)*10}%)`:""}`;selected=[];save();if(fight.hp<=0)return victory();drawFight()}
+let d=baseDamage(w.length);if(fight.type==="cursedInitials"&&fight.cursedInitials?.includes(w[0]))d*=.5;let lengthResist=w.length<=5?(fight.lengthResistance?.[w.length]||0):0;if(lengthResist)d*=1-lengthResist;state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;d*=heroMultiplier(h,w,o.copies)});d=Math.round((Math.round(d*streakBonus*rogueBonus)+(fight.warriorDamage||0))*accountDamageMultiplier());fight.hp-=d;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!${fight.streakCount>1?` 🔥 ${first} STREAK ×${fight.streakCount} (+${(fight.streakCount-1)*10}%)`:""}`;selected=[];save();if(fight.hp<=0)return victory();drawFight()}
 function victory(){stopTimer();if(fight?.tutorial){state.tutorialComplete=true;save();fight=null;selected=[];$("#view").innerHTML=`<div class="panel tutorialVictory"><h2 class="title">THE CONCORD IS READY!</h2><div class="boss">🏆</div><p class="title">You learned the core WordQuest battle loop with <b>Pip, Mira, Aurelia, and Lyra</b>.</p><p class="title">Your first real expedition is waiting in Greenvale. Story battles now use Energy and a timer.</p><div class="row"><button class="primary" id="tutorialContinue">ENTER GREENVALE</button><button class="gold" id="tutorialReview">REVIEW TUTORIAL</button></div></div>`;$("#tutorialContinue").onclick=battle;$("#tutorialReview").onclick=tutorial;return}let reward=40+state.stage*10;if(fight.clericGoldBonus)reward=Math.round(reward*(1+fight.clericGoldBonus));state.coins+=reward;state.bestiary=[...new Set([...state.bestiary,fight.name])];let completed=state.stage;
+let storyXp=120+completed*12,levelUps=grantAccountXp(storyXp,"story");
 let energyReward=[5,10,15].includes(completed)?25:0;
 if(energyReward&&state.energy<ENERGY_CAP){state.energy+=energyReward;state.lastEnergyTick=Date.now()}
 else if(energyReward)energyReward=0;
-if(state.stage<15)state.stage++;else{state.gems+=250}save();$("#view").innerHTML=`<div class="panel"><h2 class="title">VICTORY!</h2><div class="boss">🏆</div><h3 class="title">${fight.name} defeated</h3><p class="title">🪙 +${reward} Coins</p>${energyReward?`<p class="title">⚡ +${energyReward} Energy milestone reward!</p>`:""}${completed===15?'<p class="title">💎 +250 CHAPTER COMPLETE!</p>':""}<div class="row"><button class="primary" id="continue">CONTINUE</button></div></div>`;$("#continue").onclick=battle}
+if(state.stage<15)state.stage++;else{state.gems+=250}save();$("#view").innerHTML=`<div class="panel"><h2 class="title">VICTORY!</h2><div class="boss">🏆</div><h3 class="title">${fight.name} defeated</h3><p class="title">🪙 +${reward} Coins</p><p class="title">⭐ +${storyXp} Account XP${levelUps?` • ACCOUNT LEVEL +${levelUps}!`:""}</p>${energyReward?`<p class="title">⚡ +${energyReward} Energy milestone reward!</p>`:""}${completed===15?'<p class="title">💎 +250 CHAPTER COMPLETE!</p>':""}<div class="row"><button class="primary" id="continue">CONTINUE</button></div></div>`;$("#continue").onclick=battle}
 function tutorial(){
  $("#view").innerHTML=`<div class="panel tutorial"><h2 class="title">HOW TO PLAY WORDQUEST</h2>
  <div class="tutorialGrid">
@@ -373,14 +436,26 @@ function heroes(filter=heroFilter){
  <div class="heroFilters">${["All","Mage","Rogue","Warrior","Cleric"].map(x=>`<button data-filter="${x}" class="${x===filter?"active":""}">${x}</button>`).join("")}</div></div>
  <section class="teamEditor"><div class="teamEditorHead"><div><span class="eyebrow">ACTIVE CONCORD</span><h3>YOUR 4-HERO TEAM</h3></div><b>${state.team.length} / 4</b></div>
  <p>Remove a hero from a slot, then choose an owned hero below to fill the opening.</p><div class="teamSlots">${slots}</div></section>
- <div class="heroes">${visible.map(h=>{let o=state.owned[h.id],onTeam=state.team.includes(h.id);return `<div class="card rarity-${h.rarity.toLowerCase()} ${!o?"locked":""}">${heroPortrait(h)}
- <div class="heroCardTitle"><b>${h.name}</b><span>${h.class}</span></div><div class="rarity">${h.rarity} ${"★".repeat(Math.max(1,ascensionRank(o?.copies||0)+1))}</div>
- <p class="abilityText">${h.ability}</p><p class="heroLore">${h.lore}</p>
+ <div class="heroes">${visible.map(h=>{let o=state.owned[h.id],onTeam=state.team.includes(h.id),star=ascensionRank(o?.copies||0)||1,d=heroStarData(h,star);return `<div class="card rarity-${h.rarity.toLowerCase()} ${!o?"locked":""}" data-hero-sheet="${h.id}">${heroPortrait(h)}
+ <div class="heroCardTitle"><b>${h.name}</b><span>${h.class}</span></div><div class="rarity">${h.rarity} ${"★".repeat(star)}${"☆".repeat(5-star)}</div>
+ <p class="abilityText">${h.ability} <small>→ current ${d.primaryPct}% bonus</small></p><p class="heroLore">${h.lore}</p>
  ${o?`<p>Lv. ${o.level} • Copies ${o.copies}</p><div class="heroActions"><button class="gold" data-up="${h.id}">UPGRADE 🪙100</button><button data-team="${h.id}" class="${onTeam?"selectedTeam":""}">${onTeam?"✓ ACTIVE":"SELECT FOR TEAM"}</button></div>`:"<b>🔒 NOT YET SUMMONED</b>"}</div>`}).join("")}</div></div>`;
  document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>heroes(b.dataset.filter));
- document.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>upgrade(b.dataset.up));
- document.querySelectorAll("[data-team]").forEach(b=>b.onclick=()=>selectTeamHero(b.dataset.team));
+ document.querySelectorAll("[data-up]").forEach(b=>b.onclick=e=>{e.stopPropagation();upgrade(b.dataset.up)});
+ document.querySelectorAll("[data-team]").forEach(b=>b.onclick=e=>{e.stopPropagation();selectTeamHero(b.dataset.team)});
  document.querySelectorAll("[data-remove-slot]").forEach(b=>b.onclick=()=>removeTeamSlot(+b.dataset.removeSlot));
+ document.querySelectorAll("[data-hero-sheet]").forEach(c=>c.onclick=e=>{if(!e.target.closest("button"))heroSheet(c.dataset.heroSheet)});
+}
+function heroSheet(id){
+ const h=HEROES.find(x=>x.id===id),o=state.owned[id],current=ascensionRank(o?.copies||0)||1,onTeam=state.team.includes(id);
+ const rows=[1,2,3,4,5].map(star=>{const d=heroStarData(h,star),need=ASCENSION_THRESHOLDS[star-1];return `<div class="starPreview ${star===current?"currentStar":""} ${star<=current?"unlockedStar":""}">
+ <div class="starLabel"><b>★${star}</b><small>${star<=current?"UNLOCKED":need+" total copies"}</small></div>
+ <div><b>Primary: +${d.primaryPct}%</b><span>${star>=3?`Letter Talent: words containing <strong>${d.letter}</strong> gain +${d.letterPct}% damage.`:"Letter Talent unlocks at ★3."}</span>${star===5?'<em>Signature Ascension — maximum current passive strength.</em>':""}</div></div>`}).join("");
+ $("#view").innerHTML=`<div class="panel heroSheet rarity-${h.rarity.toLowerCase()}"><button class="sheetBack" id="sheetBack">← HEROES</button><div class="sheetHeroHead">${heroPortrait(h)}<div><span class="eyebrow">${h.rarity} ${h.class}</span><h2>${h.name}</h2><div class="sheetStars">${"★".repeat(current)}${"☆".repeat(5-current)}</div><p>${h.lore}</p></div></div>
+ <section class="sheetPassive"><h3>PASSIVE EVOLUTION</h3><p><b>Base:</b> ${h.ability}</p><p>Duplicates strengthen the main passive and unlock a rarity-based letter talent at ★3.</p></section>
+ <section class="starRoadmap">${rows}</section>
+ ${o?`<div class="row"><button class="gold" id="sheetUpgrade">UPGRADE HERO 🪙100</button><button class="${onTeam?"selectedTeam":"primary"}" id="sheetTeam">${onTeam?"✓ ACTIVE TEAM":"SELECT FOR TEAM"}</button></div>`:'<p class="notice">Summon this hero to unlock progression.</p>'}</div>`;
+ $("#sheetBack").onclick=()=>heroes();if(o){$("#sheetUpgrade").onclick=()=>upgrade(id);$("#sheetTeam").onclick=()=>{if(onTeam)return alert("Remove this hero from an Active Concord slot before replacing them.");selectTeamHero(id)}}
 }
 function removeTeamSlot(slot){
  if(state.team.length<=1)return alert("Keep at least one hero on your active team.");
