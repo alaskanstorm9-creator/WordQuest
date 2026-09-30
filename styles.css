@@ -103,3 +103,41 @@ body{background:radial-gradient(circle at 50% 0,#244f55,#07151d 70%);margin:0}.g
 .bossRule{min-height:58px;padding:9px;border-left:3px solid #b16cff;background:rgba(0,0,0,.2)}.personalBest{display:flex;justify-content:space-between;gap:10px;margin:12px 0;font-size:.8rem}.personalBest strong{font-size:1rem;color:#f1cf79}
 .worldBossScoreBar{text-align:center;padding:10px;margin:8px auto;max-width:500px;border:1px solid rgba(241,207,121,.35);background:rgba(0,0,0,.28);border-radius:10px}.worldBossScoreBar small{display:block}.worldBossScoreBar strong{font-size:1.8rem;color:#f1cf79}
 .worldBossResult{text-align:center;max-width:720px;margin:auto}.worldScore{font-size:3rem;font-weight:900;color:#f1cf79;text-shadow:0 0 20px rgba(241,207,121,.25)}
+
+/* Mobile-first combat polish + lightweight character animation */
+@keyframes heroIdle{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-5px) rotate(1deg)}}
+@keyframes auraPulse{0%,100%{opacity:.25;transform:scale(.82)}50%{opacity:.75;transform:scale(1.12)}}
+@keyframes bossBreathe{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-7px) scale(1.035)}}
+@keyframes bossHit{0%{transform:translateX(0) scale(1)}25%{transform:translateX(-8px) scale(.96)}50%{transform:translateX(8px) scale(1.06)}100%{transform:translateX(0) scale(1)}}
+@keyframes damagePop{0%{opacity:0;transform:scale(.72) translateY(8px)}55%{opacity:1;transform:scale(1.12) translateY(-2px)}100%{transform:scale(1) translateY(0)}}
+@keyframes calamityPulse{0%,100%{filter:drop-shadow(0 0 10px rgba(171,92,255,.28))}50%{filter:drop-shadow(0 0 28px rgba(171,92,255,.68))}}
+
+.heroIcon,.bossArt{position:relative}.heroIcon span{display:inline-block;animation:heroIdle 3s ease-in-out infinite}.heroIcon i,.bossArt i{position:absolute;inset:12%;border-radius:50%;border:1px solid currentColor;opacity:.25;pointer-events:none;animation:auraPulse 2.4s ease-in-out infinite}
+.combatHero:nth-child(2) .heroIcon span{animation-delay:-.7s}.combatHero:nth-child(3) .heroIcon span{animation-delay:-1.4s}.combatHero:nth-child(4) .heroIcon span{animation-delay:-2.1s}
+.bossArt span{display:inline-block;animation:bossBreathe 3.6s ease-in-out infinite}.bossArt.bossHit span{animation:bossHit .34s ease-out}.bossArt.calamityBoss{animation:calamityPulse 2.5s ease-in-out infinite}.damagePop{animation:damagePop .38s ease-out}
+.tile:active{transform:scale(.92)}button:active{transform:scale(.97)}
+
+/* Phone portrait is the baseline battle experience */
+@media(max-width:700px){
+ html,body{overflow-x:hidden}body{font-size:14px}main,#view{width:100%;max-width:100%;padding-left:6px;padding-right:6px;box-sizing:border-box}
+ .panel{padding:12px;border-radius:10px}.battleScene{width:100%;max-width:100%;overflow:hidden}
+ .battleTop{display:grid;grid-template-columns:1fr auto;gap:5px;padding:8px}.battleTop>div:first-child{grid-column:1/2}.enemyName{grid-column:1/-1;grid-row:2;text-align:center;font-size:1.05rem}.combatTimer{grid-column:2;grid-row:1;white-space:nowrap}
+ .enemyHp{margin:5px 8px}.arena{padding:6px 8px;display:grid;grid-template-columns:78px 1fr;gap:8px;align-items:center}.bossArt{font-size:3.8rem;min-height:76px;display:grid;place-items:center}.bossIntel{font-size:.78rem;line-height:1.25;padding:7px}
+ .synergyBanner{font-size:.68rem;padding:6px;white-space:normal}.battleBody{display:flex;flex-direction:column;padding:6px;gap:7px}
+ .teamRail{order:1;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%}.combatHero{min-width:0;padding:5px;display:flex;flex-direction:column;text-align:center;align-items:center}.combatHero .heroIcon{font-size:1.65rem}.combatHero>div:last-child{min-width:0}.combatHero b{font-size:.62rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}.combatHero small{font-size:.55rem;display:block}.abilityBar{height:3px;margin-top:3px}
+ .boardArea{order:2;width:100%;min-width:0}.boostRail{order:3;width:auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;padding:7px}.boostRail small,.boostRail .tutorialTip{flex-basis:100%;text-align:center}
+ .streak{font-size:.7rem;padding:5px}.word{min-height:28px;font-size:1.25rem}.letters{width:min(94vw,390px);margin:4px auto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.tile{aspect-ratio:1/1;min-width:0;min-height:0;width:100%;font-size:1.45rem;padding:0;touch-action:manipulation}
+ .refreshRow,.actionRow{gap:6px}.actionRow button,.refreshRow button{min-height:44px}.actionRow button{flex:1}.damage{min-height:24px;font-size:.9rem}
+ .worldBossScoreBar{margin:5px 8px;padding:6px}.worldBossScoreBar strong{font-size:1.35rem}
+ .homeHero{min-height:0;padding:18px 12px}.homeCopy h2{font-size:2rem}.homeStrip{display:grid;grid-template-columns:1fr 1fr;gap:6px}.homeStrip>div,.homeStrip>button{min-width:0}
+ .heroes{grid-template-columns:1fr 1fr;gap:8px}.card{padding:9px}.card .heroLore{display:none}.heroFilters{display:flex;overflow-x:auto;gap:5px;padding-bottom:4px}.heroFilters button{flex:0 0 auto;min-height:42px}
+ .teamSlots{grid-template-columns:1fr 1fr}.teamSlot{padding:7px}.teamSlot .heroPortrait{width:42px;height:42px}.teamSlot span{font-size:.68rem}
+ .worldBossGrid{grid-template-columns:1fr}.worldBossCard{padding:14px}.worldBossIcon{font-size:3.5rem}
+ .sheetHeroHead{padding:8px}.sheetHeroHead .heroPortrait{width:100px;height:100px}.starPreview{padding:9px}.row{flex-wrap:wrap}.row button{min-height:44px}
+}
+@media(max-width:380px){
+ .heroes{grid-template-columns:1fr}.teamSlots{grid-template-columns:1fr}.arena{grid-template-columns:64px 1fr}.bossArt{font-size:3rem}.combatHero b{max-width:58px}.homeStrip{grid-template-columns:1fr}.letters{gap:5px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}
+}
