@@ -44,9 +44,9 @@ const HEROES=[
 {id:"themis",name:"Themis Runejudge",class:"Cleric",rarity:"Rare",icon:"⚖️",ability:"6+ letter words +55%",min:7,max:99,min:8,max:99,mult:1.55,theme:"Themis/Norns",lore:"An oracle who discovered the Norns and Fates are recording the same destiny in different alphabets."}
 ];
 const BOSSES=[
-["Moss Goblin","👺","none"],["Forest Boar","🐗","short"],["Briar Witch","🧙","long"],["Cave Ogre","👹","four"],["Stonefang","🐺","short"],
-["Bog Troll","🧌","long"],["Rune Knight","🗿","four"],["Hex Crow","🐦‍⬛","disable"],["Hill Giant","🦣","short"],["Iron Troll","👹","four"],
-["Wyrmling","🐲","long"],["Grave Mage","🧙‍♂️","disable"],["Mountain Drake","🐉","short"],["Ancient Golem","🗿","four"],["Gravemaw","🐲","long"]
+["Moss Goblin","👺","none"],["Forest Boar","🐗","none"],["Briar Witch","🧙","none"],["Cave Ogre","👹","none"],["Stonefang","🐺","none"],
+["Bog Troll","🧌","none"],["Rune Knight","🗿","none"],["Hex Crow","🐦‍⬛","none"],["Hill Giant","🦣","none"],["Iron Troll","👹","none"],
+["Wyrmling","🐲","none"],["Grave Mage","🧙‍♂️","none"],["Mountain Drake","🐉","none"],["Ancient Golem","🗿","none"],["Gravemaw","🐲","none"]
 ];
 const WORDS=new Set(["AN","AS","AT","BE","BY","DO","GO","HE","IF","IN","IS","IT","ME","MY","NO","OF","ON","OR","OX","SO","TO","UP","US","WE","ACE","ACT","AGE","AIR","ANT","APE","ARC","ART","ASH","ASK","BAD","BAG","BAR","BAT","BED","BEE","BIG","BIT","BOG","BOW","BOX","BOY","BUG","CAN","CAP","CAR","CAT","COW","CRY","DAY","DOG","DRY","EAR","EAT","ELF","END","FAR","FIRE","FISH","GAME","GEM","GOLD","HERO","HIT","ICE","INK","JAM","KEY","KING","LAND","LONG","MAGE","MAP","MOON","OGRE","QUEST","RAGE","RUNE","SHIELD","SWORD","TOWER","WORD","WORDS","WORLD","DRAGON","BATTLE","HUNTER","MAGIC","STONE","STORM","QUESTS","ADVENTURE","KINGDOM"]);
 const REFRESH_GEM_COST=25;
@@ -183,7 +183,21 @@ function boss(stage){
   let hp=stage<=5?earlyHp[stage-1]:Math.round(180*Math.pow(1.22,stage-5));
   return{name,icon,type,max:hp,hp}
 }
-function traitText(type){return {none:"No special ability.",short:"Stone Hide: 2–3 letter words deal 50% less damage.",long:"Cracked Armor: 6+ letter words deal 35% more damage.",four:"Perfect Four: 4-letter words deal 50% more; 7+ deal 25% less.",disable:"Hex: one letter is disabled this battle."}[type]}
+const BOSS_CURSE_LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+function chapterBossDebuff(chapter){
+ if(chapter<=1)return {type:"none",letters:[]};
+ if(chapter<=3)return {type:"cursedInitials",letters:[BOSS_CURSE_LETTERS[Math.floor(Math.random()*BOSS_CURSE_LETTERS.length)]]};
+ if(chapter<=5){
+  let a=BOSS_CURSE_LETTERS[Math.floor(Math.random()*BOSS_CURSE_LETTERS.length)],b;
+  do{b=BOSS_CURSE_LETTERS[Math.floor(Math.random()*BOSS_CURSE_LETTERS.length)]}while(b===a);
+  return {type:"cursedInitials",letters:[a,b]};
+ }
+ return {type:"none",letters:[]};
+}
+function traitText(type,letters=[]){
+ if(type==="cursedInitials")return `Cursed Initials: words starting with ${letters.join(" or ")} deal 50% damage.`;
+ return "No special ability.";
+}
 function render(v){if(v==="home")home();if(v==="battle")battle();if(v==="heroes")heroes();if(v==="summon")summon();if(v==="codex")codex();if(v==="store")store();if(v==="tutorial")tutorial()}
 function home(){
  let b=boss(state.stage);
@@ -232,10 +246,10 @@ function startTutorialFight(){
  fight={name:"Training Wisp",icon:"✨",type:"none",max:85,hp:85,disabled:"",used:new Set(),timeLeft:0,refreshes:0,streakLetter:"",streakCount:0,timeBoostUsed:true,tutorial:true};
  fight.mageTimeBonus=0;fight.rogueBonusCount=0;fight.rogueBonusTiles=new Set();fight.warriorDamage=0;fight.clericExtraRerolls=0;fight.clericGoldBonus=0;fight.letters=board();selected=[];drawFight();
 }
-function battle(){let b=boss(state.stage);$("#view").innerHTML=`<div class="panel"><h2 class="title">CHAPTER 1 — GREENVALE</h2><p class="title">Stage ${state.stage} / 15 • ${isBossStage(state.stage)?"Boss: 3:00":"Stage: 1:00"}</p><div class="stagegrid">${BOSSES.map((_,i)=>`<button class="${i+1===state.stage?"current":""}" ${i+1>state.stage?"disabled":""} data-stage="${i+1}">${i+1}</button>`).join("")}</div><div class="boss">${b.icon}</div><h2 class="title">${b.name}</h2><div class="traits"><b>Boss Intel</b><br>${traitText(b.type)}</div><div class="row"><button class="primary" id="start">START — ⚡5</button></div></div>`;$("#start").onclick=startFight;document.querySelectorAll("[data-stage]").forEach(x=>x.onclick=()=>{state.stage=+x.dataset.stage;save();battle()})}
+function battle(){let b=boss(state.stage);$("#view").innerHTML=`<div class="panel"><h2 class="title">CHAPTER 1 — GREENVALE</h2><p class="title">Stage ${state.stage} / 15 • ${isBossStage(state.stage)?"Boss: 3:00":"Stage: 1:00"}</p><div class="stagegrid">${BOSSES.map((_,i)=>`<button class="${i+1===state.stage?"current":""}" ${i+1>state.stage?"disabled":""} data-stage="${i+1}">${i+1}</button>`).join("")}</div><div class="boss">${b.icon}</div><h2 class="title">${b.name}</h2><div class="traits"><b>Boss Intel</b><br>${traitText(b.type,b.cursedInitials||[])}</div><div class="row"><button class="primary" id="start">START — ⚡5</button></div></div>`;$("#start").onclick=startFight;document.querySelectorAll("[data-stage]").forEach(x=>x.onclick=()=>{state.stage=+x.dataset.stage;save();battle()})}
 function teamClassCount(cls){return state.team.filter(id=>HEROES.find(h=>h.id===id)?.class===cls).length}
 function randomBonusTiles(count){let ids=[...Array(16).keys()];for(let i=ids.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}return new Set(ids.slice(0,count))}
-function startFight(){if(state.energy<5)return alert("Not enough Story Energy.");state.energy-=5;save();fight=boss(state.stage);fight.disabled=fight.type==="disable"?"E":"";fight.used=new Set();fight.timeLeft=stageSeconds(state.stage);fight.refreshes=0;fight.streakLetter="";fight.streakCount=0;fight.timeBoostUsed=false;let mageCount=teamClassCount("Mage");fight.mageTimeBonus=mageCount>=4?25:mageCount>=2?10:0;fight.timeLeft+=fight.mageTimeBonus;let rogueCount=teamClassCount("Rogue");fight.rogueBonusCount=rogueCount>=4?6:rogueCount>=2?2:0;fight.rogueBonusTiles=randomBonusTiles(fight.rogueBonusCount);let warriorCount=teamClassCount("Warrior");fight.warriorDamage=warriorCount>=4?10:warriorCount>=2?5:0;let clericCount=teamClassCount("Cleric");fight.clericExtraRerolls=clericCount>=2?1:0;fight.clericGoldBonus=clericCount>=4?.20:0;fight.letters=board();selected=[];drawFight();startTimer()}
+function startFight(){if(state.energy<5)return alert("Not enough Story Energy.");state.energy-=5;save();fight=boss(state.stage);fight.disabled="";fight.used=new Set();fight.timeLeft=stageSeconds(state.stage);fight.refreshes=0;fight.streakLetter="";fight.streakCount=0;fight.timeBoostUsed=false;let mageCount=teamClassCount("Mage");fight.mageTimeBonus=mageCount>=4?25:mageCount>=2?10:0;fight.timeLeft+=fight.mageTimeBonus;let rogueCount=teamClassCount("Rogue");fight.rogueBonusCount=rogueCount>=4?6:rogueCount>=2?2:0;fight.rogueBonusTiles=randomBonusTiles(fight.rogueBonusCount);let warriorCount=teamClassCount("Warrior");fight.warriorDamage=warriorCount>=4?10:warriorCount>=2?5:0;let clericCount=teamClassCount("Cleric");fight.clericExtraRerolls=clericCount>=2?1:0;fight.clericGoldBonus=clericCount>=4?.20:0;fight.letters=board();selected=[];drawFight();startTimer()}
 function board(){let vowels="AAAAAAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEEEEIIIIIIIIIIIIOOOOOOOOOOUUUUU",consonants="BBBBCCCDDDDDDFFFFFFFFGGGGGHHHHHHJKLLLLLMMMMNNNNNNNNPPPPQRRRRRRRRRSSSSSSSSTTTTTTTTTVVWWXYYZ";let a=[];for(let i=0;i<6;i++)a.push(vowels[Math.floor(Math.random()*vowels.length)]);for(let i=0;i<10;i++)a.push(consonants[Math.floor(Math.random()*consonants.length)]);for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function activeSynergyText(){
   let parts=[];
@@ -261,7 +275,7 @@ function drawFight(){
     <div class="enemyHp"><div style="width:${Math.max(0,fight.hp/fight.max*100)}%"></div><span>${Math.max(0,fight.hp)} / ${fight.max} HP</span></div>
     <div class="arena">
       <div class="bossArt">${fight.icon}</div>
-      <div class="bossIntel"><b>${fight.tutorial?"Training Encounter":"Boss Intel"}</b><br>${fight.tutorial?"Practice building words and watch how each starter hero contributes. There is no time pressure.":traitText(fight.type)} ${fight.disabled?`<strong>Disabled: ${fight.disabled}</strong>`:""}</div>
+      <div class="bossIntel"><b>${fight.tutorial?"Training Encounter":"Boss Intel"}</b><br>${fight.tutorial?"Practice building words and watch how each starter hero contributes. There is no time pressure.":traitText(fight.type,fight.cursedInitials||[])} ${fight.disabled?`<strong>Disabled: ${fight.disabled}</strong>`:""}</div>
     </div>
     <div class="synergyBanner">${fight.tutorial?"Pip • Rogue &nbsp;|&nbsp; Mira • Mage &nbsp;|&nbsp; Aurelia • Warrior &nbsp;|&nbsp; Lyra • Cleric — balanced teams have no same-class synergy":activeSynergyText()}</div>
     <div class="battleBody">
@@ -310,7 +324,7 @@ else{fight.streakLetter=first;fight.streakCount=1}
 let streakBonus=1+Math.max(0,fight.streakCount-1)*0.10;
 let rogueHits=selected.filter(i=>fight.rogueBonusTiles?.has(i)).length;
 let rogueBonus=Math.pow(2,rogueHits);
-let d=baseDamage(w.length);if(fight.type==="short"&&w.length<=3)d*=.5;if(fight.type==="long"&&w.length>=6)d*=1.35;if(fight.type==="four"){if(w.length===4)d*=1.5;if(w.length>=7)d*=.75}state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;d*=heroMultiplier(h,w,o.copies)});d=Math.round(d*streakBonus*rogueBonus)+(fight.warriorDamage||0);fight.hp-=d;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!${fight.streakCount>1?` 🔥 ${first} STREAK ×${fight.streakCount} (+${(fight.streakCount-1)*10}%)`:""}`;selected=[];save();if(fight.hp<=0)return victory();drawFight()}
+let d=baseDamage(w.length);if(fight.type==="cursedInitials"&&fight.cursedInitials?.includes(w[0]))d*=.5;state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;d*=heroMultiplier(h,w,o.copies)});d=Math.round(d*streakBonus*rogueBonus)+(fight.warriorDamage||0);fight.hp-=d;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!${fight.streakCount>1?` 🔥 ${first} STREAK ×${fight.streakCount} (+${(fight.streakCount-1)*10}%)`:""}`;selected=[];save();if(fight.hp<=0)return victory();drawFight()}
 function victory(){stopTimer();if(fight?.tutorial){state.tutorialComplete=true;save();fight=null;selected=[];$("#view").innerHTML=`<div class="panel tutorialVictory"><h2 class="title">THE CONCORD IS READY!</h2><div class="boss">🏆</div><p class="title">You learned the core WordQuest battle loop with <b>Pip, Mira, Aurelia, and Lyra</b>.</p><p class="title">Your first real expedition is waiting in Greenvale. Story battles now use Energy and a timer.</p><div class="row"><button class="primary" id="tutorialContinue">ENTER GREENVALE</button><button class="gold" id="tutorialReview">REVIEW TUTORIAL</button></div></div>`;$("#tutorialContinue").onclick=battle;$("#tutorialReview").onclick=tutorial;return}let reward=40+state.stage*10;if(fight.clericGoldBonus)reward=Math.round(reward*(1+fight.clericGoldBonus));state.coins+=reward;state.bestiary=[...new Set([...state.bestiary,fight.name])];let completed=state.stage;
 let energyReward=[5,10,15].includes(completed)?25:0;
 if(energyReward&&state.energy<ENERGY_CAP){state.energy+=energyReward;state.lastEnergyTick=Date.now()}
@@ -324,7 +338,7 @@ function tutorial(){
  <section><b>③ LETTER STREAK</b><p>Start consecutive valid words with the same letter: 2nd +10%, 3rd +20%, 4th +30%, 5th and beyond +40%. Changing the starting letter or rerolling resets the streak.</p></section>
  <section><b>④ HERO PASSIVES</b><p>Your four heroes can multiply damage when a word matches their specialty. Check each Hero card for its word-length or letter condition.</p></section>
  <section><b>⑤ CLASS SYNERGY</b><p><strong>Mage:</strong> 2 = +10 sec, 4 = +25 sec in Story. <strong>Rogue:</strong> 2 = two ×2 tiles, 4 = six ×2 tiles. <strong>Warrior:</strong> 2 = +5 Strike damage, 4 = +10. <strong>Cleric:</strong> 2 = +1 free reroll, 4 = +1 reroll and +20% Coins.</p></section>
- <section><b>⑥ BOSS RULES</b><p>Read Boss Intel before attacking. Enemies can resist short words, reward long words, favor exactly four letters, or disable a tile letter.</p></section>
+ <section><b>⑥ BOSS RULES</b><p>Chapter 1 enemies have no special abilities so you can learn the core word combat. Beginning in later chapters, Boss Intel introduces readable debuffs such as Cursed Initials: flagged starting letters cause a word to deal 50% damage.</p></section>
  <section><b>⑦ NEW LETTERS</b><p>Your first reroll is free. Additional rerolls normally cost 25 Gems. Cleric synergy can grant another free reroll. Rerolling also resets used words and Letter Streak.</p></section>
  <section><b>⑧ STORY ENERGY</b><p>Story battles cost 5 Energy. Energy naturally regenerates up to 50. Purchased or earned Energy can temporarily exceed that cap.</p></section>
  </div><p class="tutorialFuture">Hero Active Abilities will receive their own tutorial step when Ability Energy is added.</p>
