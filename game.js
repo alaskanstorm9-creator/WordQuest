@@ -61,6 +61,7 @@ let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,
 if(state.energyCap==null)state.energyCap=ENERGY_CAP;
 if(state.rarePity==null)state.rarePity=0;
 if(state.summonAnimation==null)state.summonAnimation="full";
+if(state.tutorialComplete==null)state.tutorialComplete=false;
 const ACCOUNT_KEY="wordquest-account-v01";
 let account=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"null");
 function accountId(){return "WQ-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,7).toUpperCase()}
@@ -201,6 +202,19 @@ function home(){
  </div>`;
  $("#homePlay").onclick=()=>render("battle");$("#homeHeroes").onclick=()=>render("heroes");
 }
+function tutorialIntro(){
+ stopTimer();
+ const starters=["pip","mira","aurelia","lyra"].map(id=>HEROES.find(h=>h.id===id));
+ $("#view").innerHTML=`<div class="panel starterIntro"><span class="eyebrow">THE CONCORD FORMS</span><h2 class="title">MEET YOUR FIRST FOUR HEROES</h2><p class="title">Every WordQuest player begins with one hero from each class. This first battle has <b>no timer, no Energy cost, and no failure penalty.</b></p>
+ <div class="starterFour">${starters.map(h=>`<div class="starterHero ${h.class.toLowerCase()}">${heroPortrait(h)}<h3>${h.name}</h3><b>${h.class}</b><p>${h.ability}</p><small>${h.class==="Rogue"?"Rogues exploit valuable board positions.":h.class==="Mage"?"Mages manipulate time and the Lifeword.":h.class==="Warrior"?"Warriors turn every Strike into heavier damage.":"Clerics sustain expeditions with rerolls and rewards."}</small></div>`).join("")}</div>
+ <div class="row"><button class="primary" id="beginTutorialFight">BEGIN TUTORIAL BATTLE</button><button class="gold" id="tutorialBack">BACK</button></div></div>`;
+ $("#beginTutorialFight").onclick=startTutorialFight;$("#tutorialBack").onclick=tutorial;
+}
+function startTutorialFight(){
+ stopTimer();
+ fight={name:"Training Wisp",icon:"✨",type:"none",max:85,hp:85,disabled:"",used:new Set(),timeLeft:0,refreshes:0,streakLetter:"",streakCount:0,timeBoostUsed:true,tutorial:true};
+ fight.mageTimeBonus=0;fight.rogueBonusCount=0;fight.rogueBonusTiles=new Set();fight.warriorDamage=0;fight.clericExtraRerolls=0;fight.clericGoldBonus=0;fight.letters=board();selected=[];drawFight();
+}
 function battle(){let b=boss(state.stage);$("#view").innerHTML=`<div class="panel"><h2 class="title">CHAPTER 1 — GREENVALE</h2><p class="title">Stage ${state.stage} / 15 • ${isBossStage(state.stage)?"Boss: 3:00":"Stage: 1:00"}</p><div class="stagegrid">${BOSSES.map((_,i)=>`<button class="${i+1===state.stage?"current":""}" ${i+1>state.stage?"disabled":""} data-stage="${i+1}">${i+1}</button>`).join("")}</div><div class="boss">${b.icon}</div><h2 class="title">${b.name}</h2><div class="traits"><b>Boss Intel</b><br>${traitText(b.type)}</div><div class="row"><button class="primary" id="start">START — ⚡5</button></div></div>`;$("#start").onclick=startFight;document.querySelectorAll("[data-stage]").forEach(x=>x.onclick=()=>{state.stage=+x.dataset.stage;save();battle()})}
 function teamClassCount(cls){return state.team.filter(id=>HEROES.find(h=>h.id===id)?.class===cls).length}
 function randomBonusTiles(count){let ids=[...Array(16).keys()];for(let i=ids.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}return new Set(ids.slice(0,count))}
@@ -223,16 +237,16 @@ function drawFight(){
   }).join("");
   $("#view").innerHTML=`<div class="battleScene">
     <div class="battleTop">
-      <div><small>CHAPTER 1 • GREENVALE</small><b>Stage ${state.stage} / 15</b></div>
+      <div><small>${fight.tutorial?"TUTORIAL • THE CONCORD FORMS":"CHAPTER 1 • GREENVALE"}</small><b>${fight.tutorial?"First Battle":"Stage "+state.stage+" / 15"}</b></div>
       <div class="enemyName">${fight.name}</div>
-      <div class="combatTimer">⏱ <span id="timer">${formatTime(fight.timeLeft)}</span></div>
+      <div class="combatTimer">${fight.tutorial?"∞ NO TIME LIMIT":`⏱ <span id="timer">${formatTime(fight.timeLeft)}</span>`}</div>
     </div>
     <div class="enemyHp"><div style="width:${Math.max(0,fight.hp/fight.max*100)}%"></div><span>${Math.max(0,fight.hp)} / ${fight.max} HP</span></div>
     <div class="arena">
       <div class="bossArt">${fight.icon}</div>
-      <div class="bossIntel"><b>Boss Intel</b><br>${traitText(fight.type)} ${fight.disabled?`<strong>Disabled: ${fight.disabled}</strong>`:""}</div>
+      <div class="bossIntel"><b>${fight.tutorial?"Training Encounter":"Boss Intel"}</b><br>${fight.tutorial?"Practice building words and watch how each starter hero contributes. There is no time pressure.":traitText(fight.type)} ${fight.disabled?`<strong>Disabled: ${fight.disabled}</strong>`:""}</div>
     </div>
-    <div class="synergyBanner">${activeSynergyText()}</div>
+    <div class="synergyBanner">${fight.tutorial?"Pip • Rogue &nbsp;|&nbsp; Mira • Mage &nbsp;|&nbsp; Aurelia • Warrior &nbsp;|&nbsp; Lyra • Cleric — balanced teams have no same-class synergy":activeSynergyText()}</div>
     <div class="battleBody">
       <div class="teamRail">${teamCards}</div>
       <div class="boardArea">
@@ -245,8 +259,7 @@ function drawFight(){
         <p class="notice" id="notice">Click letters in order to build your word.</p>
       </div>
       <div class="boostRail">
-        <b>+30 SECONDS</b><small>One time per battle</small>
-        ${!fight.timeBoostUsed?`<button onclick="addTimeBoost('ad')">▶ WATCH AD</button><span>OR</span><button onclick="addTimeBoost('gems')">💎 15 GEMS</button>`:`<div class="boostUsed">TIME BOOST USED</div>`}
+        ${fight.tutorial?`<b>TUTORIAL</b><small>Take as long as you need.</small><div class="tutorialTip">Try different word lengths and repeat a starting letter to build a Letter Streak.</div>`:`<b>+30 SECONDS</b><small>One time per battle</small>${!fight.timeBoostUsed?`<button onclick="addTimeBoost('ad')">▶ WATCH AD</button><span>OR</span><button onclick="addTimeBoost('gems')">💎 15 GEMS</button>`:`<div class="boostUsed">TIME BOOST USED</div>`}`}
       </div>
     </div>
   </div>`;
@@ -259,7 +272,7 @@ function pick(i){let p=selected.indexOf(i);p>=0?selected.splice(p,1):selected.pu
 function syncWord(){let w=selected.map(i=>fight.letters[i]).join("");$("#word").textContent=w;document.querySelectorAll(".tile").forEach((x,i)=>x.classList.toggle("selected",selected.includes(i)))}
 function refreshLetters(){
   if(!fight)return;
-  if(fight.refreshes>=(1+(fight.clericExtraRerolls||0))){
+  if(!fight.tutorial&&fight.refreshes>=(1+(fight.clericExtraRerolls||0))){
     if(state.gems<REFRESH_GEM_COST){$("#notice").textContent="Not enough Gems for another letter refresh.";return}
     state.gems-=REFRESH_GEM_COST;
   }
@@ -281,7 +294,7 @@ let streakBonus=1+Math.max(0,fight.streakCount-1)*0.10;
 let rogueHits=selected.filter(i=>fight.rogueBonusTiles?.has(i)).length;
 let rogueBonus=Math.pow(2,rogueHits);
 let d=baseDamage(w.length);if(fight.type==="short"&&w.length<=3)d*=.5;if(fight.type==="long"&&w.length>=6)d*=1.35;if(fight.type==="four"){if(w.length===4)d*=1.5;if(w.length>=7)d*=.75}state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;d*=heroMultiplier(h,w,o.copies)});d=Math.round(d*streakBonus*rogueBonus)+(fight.warriorDamage||0);fight.hp-=d;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!${fight.streakCount>1?` 🔥 ${first} STREAK ×${fight.streakCount} (+${(fight.streakCount-1)*10}%)`:""}`;selected=[];save();if(fight.hp<=0)return victory();drawFight()}
-function victory(){stopTimer();let reward=40+state.stage*10;if(fight.clericGoldBonus)reward=Math.round(reward*(1+fight.clericGoldBonus));state.coins+=reward;state.bestiary=[...new Set([...state.bestiary,fight.name])];let completed=state.stage;
+function victory(){stopTimer();if(fight?.tutorial){state.tutorialComplete=true;save();fight=null;selected=[];$("#view").innerHTML=`<div class="panel tutorialVictory"><h2 class="title">THE CONCORD IS READY!</h2><div class="boss">🏆</div><p class="title">You learned the core WordQuest battle loop with <b>Pip, Mira, Aurelia, and Lyra</b>.</p><p class="title">Your first real expedition is waiting in Greenvale. Story battles now use Energy and a timer.</p><div class="row"><button class="primary" id="tutorialContinue">ENTER GREENVALE</button><button class="gold" id="tutorialReview">REVIEW TUTORIAL</button></div></div>`;$("#tutorialContinue").onclick=battle;$("#tutorialReview").onclick=tutorial;return}let reward=40+state.stage*10;if(fight.clericGoldBonus)reward=Math.round(reward*(1+fight.clericGoldBonus));state.coins+=reward;state.bestiary=[...new Set([...state.bestiary,fight.name])];let completed=state.stage;
 let energyReward=[5,10,15].includes(completed)?25:0;
 if(energyReward&&state.energy<ENERGY_CAP){state.energy+=energyReward;state.lastEnergyTick=Date.now()}
 else if(energyReward)energyReward=0;
@@ -298,8 +311,8 @@ function tutorial(){
  <section><b>⑦ NEW LETTERS</b><p>Your first reroll is free. Additional rerolls normally cost 25 Gems. Cleric synergy can grant another free reroll. Rerolling also resets used words and Letter Streak.</p></section>
  <section><b>⑧ STORY ENERGY</b><p>Story battles cost 5 Energy. Energy naturally regenerates up to 50. Purchased or earned Energy can temporarily exceed that cap.</p></section>
  </div><p class="tutorialFuture">Hero Active Abilities will receive their own tutorial step when Ability Energy is added.</p>
- <div class="row"><button class="primary" id="tutorialBattle">PRACTICE IN CAMPAIGN</button><button class="gold" id="tutorialHome">BACK HOME</button></div></div>`;
- $("#tutorialBattle").onclick=battle;$("#tutorialHome").onclick=home;
+ <div class="row"><button class="primary" id="tutorialBattle">PLAY STARTER TUTORIAL</button><button class="gold" id="tutorialHome">BACK HOME</button></div></div>`;
+ $("#tutorialBattle").onclick=tutorialIntro;$("#tutorialHome").onclick=home;
 }
 let heroFilter="All";
 function heroPortrait(h){return `<div class="heroPortrait ${h.class.toLowerCase()}"><span>${h.icon}</span><i>${h.class==="Mage"?"✦":h.class==="Rogue"?"✣":h.class==="Warrior"?"⚔":"☀"}</i></div>`}
