@@ -60,6 +60,7 @@ const baseDamage=n=>n<=2?5:n===3?10:n===4?18:n===5?30:n===6?45:n===7?65:90+(n-8)
 let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,coins:500,energy:50,stage:1,owned:{pip:{copies:1,level:1},mira:{copies:1,level:1},aurelia:{copies:1,level:1}},team:["pip","mira","aurelia"],codex:[],bestiary:[],pity:0};
 if(state.energyCap==null)state.energyCap=ENERGY_CAP;
 if(state.rarePity==null)state.rarePity=0;
+if(state.summonAnimation==null)state.summonAnimation="full";
 const ACCOUNT_KEY="wordquest-account-v01";
 let account=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"null");
 function accountId(){return "WQ-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,7).toUpperCase()}
@@ -181,14 +182,14 @@ function boss(stage){
   return{name,icon,type,max:hp,hp}
 }
 function traitText(type){return {none:"No special ability.",short:"Stone Hide: 2–3 letter words deal 50% less damage.",long:"Cracked Armor: 6+ letter words deal 35% more damage.",four:"Perfect Four: 4-letter words deal 50% more; 7+ deal 25% less.",disable:"Hex: one letter is disabled this battle."}[type]}
-function render(v){if(v==="home")home();if(v==="battle")battle();if(v==="heroes")heroes();if(v==="summon")summon();if(v==="codex")codex();if(v==="store")store()}
+function render(v){if(v==="home")home();if(v==="battle")battle();if(v==="heroes")heroes();if(v==="summon")summon();if(v==="codex")codex();if(v==="store")store();if(v==="tutorial")tutorial()}
 function home(){
  let b=boss(state.stage);
  $("#view").innerHTML=`<div class="homeScreen">
   <section class="homeHero">
    <div class="homeCopy"><span class="eyebrow">A WORLD OF LIVING LANGUAGE</span><h2>CHAPTER 1<br><strong>GREENVALE</strong></h2>
    <p>A peaceful valley surrounds the Rootstone World Anchor. Ancient prisons have opened, creatures roam the land, and the Lifeword is beginning to wither.</p>
-   <button class="primary homePlay" id="homePlay">PLAY STORY</button></div>
+   <button class="primary homePlay" id="homePlay">PLAY STORY</button> <button class="gold" id="homeTutorial">HOW TO PLAY</button></div>
    <div class="anchorGlow"><div class="anchorRune">✦</div><b>ROOTSTONE</b><small>WORLD ANCHOR</small></div>
   </section>
   <section class="homeStrip">
@@ -285,6 +286,21 @@ let energyReward=[5,10,15].includes(completed)?25:0;
 if(energyReward&&state.energy<ENERGY_CAP){state.energy+=energyReward;state.lastEnergyTick=Date.now()}
 else if(energyReward)energyReward=0;
 if(state.stage<15)state.stage++;else{state.gems+=250}save();$("#view").innerHTML=`<div class="panel"><h2 class="title">VICTORY!</h2><div class="boss">🏆</div><h3 class="title">${fight.name} defeated</h3><p class="title">🪙 +${reward} Coins</p>${energyReward?`<p class="title">⚡ +${energyReward} Energy milestone reward!</p>`:""}${completed===15?'<p class="title">💎 +250 CHAPTER COMPLETE!</p>':""}<div class="row"><button class="primary" id="continue">CONTINUE</button></div></div>`;$("#continue").onclick=battle}
+function tutorial(){
+ $("#view").innerHTML=`<div class="panel tutorial"><h2 class="title">HOW TO PLAY WORDQUEST</h2>
+ <div class="tutorialGrid">
+ <section><b>① BUILD A WORD</b><p>Tap letter tiles in order, then press <strong>STRIKE</strong>. Every valid word damages the enemy. A word can only score once on the current board.</p></section>
+ <section><b>② BASE WORD DAMAGE</b><p>2 letters: 5 • 3: 10 • 4: 18 • 5: 30 • 6: 45 • 7: 65 • 8: 90. Each letter beyond 8 adds 20 damage.</p></section>
+ <section><b>③ LETTER STREAK</b><p>Start consecutive valid words with the same letter: 2nd +10%, 3rd +20%, 4th +30%, 5th and beyond +40%. Changing the starting letter or rerolling resets the streak.</p></section>
+ <section><b>④ HERO PASSIVES</b><p>Your four heroes can multiply damage when a word matches their specialty. Check each Hero card for its word-length or letter condition.</p></section>
+ <section><b>⑤ CLASS SYNERGY</b><p><strong>Mage:</strong> 2 = +10 sec, 4 = +25 sec in Story. <strong>Rogue:</strong> 2 = two ×2 tiles, 4 = six ×2 tiles. <strong>Warrior:</strong> 2 = +5 Strike damage, 4 = +10. <strong>Cleric:</strong> 2 = +1 free reroll, 4 = +1 reroll and +20% Coins.</p></section>
+ <section><b>⑥ BOSS RULES</b><p>Read Boss Intel before attacking. Enemies can resist short words, reward long words, favor exactly four letters, or disable a tile letter.</p></section>
+ <section><b>⑦ NEW LETTERS</b><p>Your first reroll is free. Additional rerolls normally cost 25 Gems. Cleric synergy can grant another free reroll. Rerolling also resets used words and Letter Streak.</p></section>
+ <section><b>⑧ STORY ENERGY</b><p>Story battles cost 5 Energy. Energy naturally regenerates up to 50. Purchased or earned Energy can temporarily exceed that cap.</p></section>
+ </div><p class="tutorialFuture">Hero Active Abilities will receive their own tutorial step when Ability Energy is added.</p>
+ <div class="row"><button class="primary" id="tutorialBattle">PRACTICE IN CAMPAIGN</button><button class="gold" id="tutorialHome">BACK HOME</button></div></div>`;
+ $("#tutorialBattle").onclick=battle;$("#tutorialHome").onclick=home;
+}
 let heroFilter="All";
 function heroPortrait(h){return `<div class="heroPortrait ${h.class.toLowerCase()}"><span>${h.icon}</span><i>${h.class==="Mage"?"✦":h.class==="Rogue"?"✣":h.class==="Warrior"?"⚔":"☀"}</i></div>`}
 function heroes(filter=heroFilter){
@@ -307,23 +323,36 @@ function toggleTeam(id){
  save();heroes();
 }
 function upgrade(id){if(state.coins<100)return alert("Need 100 Coins.");state.coins-=100;state.owned[id].level++;save();heroes()}
-function summon(){$("#view").innerHTML=`<div class="panel"><h2 class="title">HERO SUMMON</h2><div class="boss">✨</div><p class="title">Summon heroes. Duplicate heroes increase their copy count for Ascension.</p><div class="row"><button class="gold" data-pull="1">SUMMON ×1<br>💎100</button><button class="primary" data-pull="10">SUMMON ×10<br>💎1,000</button></div><p class="notice" id="pullResult"></p><p class="title">Rare+ guarantee: ${state.rarePity}/10 • Ultra pity: ${state.pity}/50</p></div>`;document.querySelectorAll("[data-pull]").forEach(b=>b.onclick=()=>pull(+b.dataset.pull))}
+function summon(){
+ $("#view").innerHTML=`<div class="panel summonHall"><h2 class="title">HERO SUMMON</h2><div class="summonSigil">✦</div>
+ <p class="title">Call heroes through the Lifeword. Duplicates increase copy count for Ascension.</p>
+ <div class="summonMode"><b>SUMMON PRESENTATION</b><button data-anim="full" class="${state.summonAnimation==="full"?"active":""}">✨ FULL ANIMATION</button><button data-anim="quick" class="${state.summonAnimation==="quick"?"active":""}">⚡ QUICK SUMMON</button></div>
+ <div class="row"><button class="gold" data-pull="1">SUMMON ×1<br>💎100</button><button class="primary" data-pull="10">SUMMON ×10<br>💎1,000</button></div>
+ <p class="notice" id="pullResult"></p><p class="title">Ultra 5% • Rare 20% • Uncommon 40% • Common 35%<br>Rare+ guarantee: ${state.rarePity}/10 • Ultra pity: ${state.pity}/50</p></div>`;
+ document.querySelectorAll("[data-pull]").forEach(b=>b.onclick=()=>pull(+b.dataset.pull));
+ document.querySelectorAll("[data-anim]").forEach(b=>b.onclick=()=>{state.summonAnimation=b.dataset.anim;save();summon()});
+}
+function revealSummons(results){
+ const full=state.summonAnimation==="full";
+ if(!full){summon();$("#pullResult").innerHTML=results.map(x=>`<b class="pull-${x.rarity.toLowerCase()}">${x.icon} ${x.name} — ${x.rarity}</b>`).join(" • ");return}
+ $("#view").innerHTML=`<div class="summonReveal"><button id="skipReveal" class="skipReveal">SKIP</button><div class="summonPortal"><span>✦</span><small>THE LIFEWORD ANSWERS...</small></div><div id="revealCards" class="revealCards"></div><button id="revealDone" class="primary" style="display:none">CONTINUE</button></div>`;
+ let i=0,done=false,timer;
+ const finish=()=>{if(done)return;done=true;clearInterval(timer);$("#revealCards").innerHTML=results.map(x=>`<div class="revealHero pull-${x.rarity.toLowerCase()}"><span>${x.icon}</span><b>${x.name}</b><small>${x.rarity} • ${x.class}</small></div>`).join("");$("#revealDone").style.display="block";$("#skipReveal").style.display="none"};
+ const step=()=>{if(i>=results.length)return finish();const x=results[i++],card=document.createElement("div");card.className=`revealHero revealPop pull-${x.rarity.toLowerCase()}`;card.innerHTML=`<span>${x.icon}</span><b>${x.name}</b><small>${x.rarity} • ${x.class}</small>`;$("#revealCards").appendChild(card);if(x.rarity==="Ultra")document.querySelector(".summonPortal").classList.add("ultraFanfare");};
+ timer=setInterval(step,650);setTimeout(step,450);$("#skipReveal").onclick=finish;$("#revealDone").onclick=summon;
+}
 function pull(n){
  let cost=n*100;if(state.gems<cost)return alert("Not enough Gems.");
- state.gems-=cost;let out=[];
- const pool=r=>HEROES.filter(h=>h.rarity===r);
+ state.gems-=cost;let out=[];const pool=r=>HEROES.filter(h=>h.rarity===r);
  for(let i=0;i<n;i++){
   state.pity++;state.rarePity++;let r=Math.random(),rarity;
   if(state.pity>=50||r<.05){rarity="Ultra";state.pity=0}
   else if(r<.25)rarity="Rare";else if(r<.65)rarity="Uncommon";else rarity="Common";
-  if(state.rarePity>=10){
-    if(rarity==="Common"||rarity==="Uncommon")rarity="Rare";
-    state.rarePity=0;
-  }
+  if(state.rarePity>=10){if(rarity==="Common"||rarity==="Uncommon")rarity="Rare";state.rarePity=0}
   let p=pool(rarity),h=p[Math.floor(Math.random()*p.length)];
-  state.owned[h.id]??={copies:0,level:1};state.owned[h.id].copies++;out.push(h.icon+" "+h.name);
+  state.owned[h.id]??={copies:0,level:1};state.owned[h.id].copies++;out.push(h);
  }
- save();summon();$("#pullResult").textContent=out.join(" • ");
+ save();revealSummons(out);
 }
 function store(){
  $("#view").innerHTML=`<div class="panel store"><div class="storeHead"><div><h2>CONCORD SUPPLY HALL</h2><p>Relics and provisions gathered from across Aethera.</p></div><span>SECURE SUPPLIES</span></div>
