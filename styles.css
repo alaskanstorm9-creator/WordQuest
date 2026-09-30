@@ -76,3 +76,12 @@ body{background:radial-gradient(circle at 50% 0,#244f55,#07151d 70%);margin:0}.g
 
 /* Gift code redemption */
 .giftCodePanel{max-width:560px;margin:45px auto!important;background:radial-gradient(circle at 50% 0,#164b64,#081b27 58%)!important;color:#eee!important}.giftRune{text-align:center;font-size:80px}.giftEntry{display:grid;grid-template-columns:1fr auto;gap:8px;margin:20px auto;max-width:440px}.giftEntry input{min-width:0;padding:14px;background:#07151f;border:2px solid #a47b32;color:#ffe09a;font:700 17px Georgia,serif;letter-spacing:2px;text-transform:uppercase}.giftSuccess{color:#8ef09a!important}.giftError{color:#ff9b8f!important}@media(max-width:480px){.giftEntry{grid-template-columns:1fr}}
+
+/* Active Concord team editor */
+.teamEditor{margin:16px 0 22px;padding:16px;border:1px solid rgba(213,174,91,.5);background:rgba(8,15,29,.78);border-radius:12px}
+.teamEditorHead{display:flex;align-items:center;justify-content:space-between;gap:12px}.teamEditorHead h3{margin:3px 0}.teamEditorHead>b{font-size:1.1rem;color:#f1cf79}
+.teamEditor>p{opacity:.8;margin:7px 0 14px}.teamSlots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.teamSlot{min-height:86px;border:1px solid rgba(255,255,255,.14);border-radius:9px;padding:9px;display:flex;align-items:center;gap:9px;background:rgba(0,0,0,.22)}
+.teamSlot .heroPortrait{width:54px;min-width:54px;height:54px}.teamSlot div:not(.heroPortrait){display:flex;flex-direction:column;gap:2px;min-width:0}.teamSlot b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.teamSlot span,.teamSlot small{font-size:.72rem;opacity:.75}
+.teamSlot button{margin-left:auto;font-size:.67rem;padding:6px}.teamSlot.empty{border-style:dashed;opacity:.7}.emptyPortrait{width:50px;height:50px;border-radius:50%;display:grid!important;place-items:center;font-size:1.7rem;border:1px dashed rgba(255,255,255,.35)}
+@media(max-width:800px){.teamSlots{grid-template-columns:1fr 1fr}}@media(max-width:500px){.teamSlots{grid-template-columns:1fr}}
