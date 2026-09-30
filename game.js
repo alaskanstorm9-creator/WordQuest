@@ -67,6 +67,8 @@ if(state.accountLevel==null)state.accountLevel=1;
 if(state.accountXp==null)state.accountXp=0;
 if(state.accountXpSources==null)state.accountXpSources={story:0,worldBoss:0,pvp:0};
 if(state.worldBossScores==null)state.worldBossScores={};
+if(state.damageDisplay==null)state.damageDisplay="full";
+if(state.profileHero==null||!state.owned[state.profileHero])state.profileHero=state.owned.pip?"pip":Object.keys(state.owned)[0];
 if(!state.owned.lyra)state.owned.lyra={copies:1,level:1};
 const ACCOUNT_KEY="wordquest-account-v01";
 let account=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"null");
@@ -333,9 +335,26 @@ function finishWorldBoss(){
  $("#wbAgain").onclick=()=>startWorldBoss(b.id);$("#wbHub").onclick=worldBoss;fight=null;
 }
 function render(v){if(v==="home")home();if(v==="battle")battle();if(v==="heroes")heroes();if(v==="summon")summon();if(v==="codex")codex();if(v==="store")store();if(v==="tutorial")tutorial();if(v==="worldboss")worldBoss()}
+function profileHero(){return HEROES.find(h=>h.id===state.profileHero)||HEROES.find(h=>state.owned[h.id])}
+function settings(){
+ stopTimer();
+ $("#view").innerHTML=`<div class="panel settingsPanel"><span class="eyebrow">PLAYER OPTIONS</span><h2>⚙ SETTINGS</h2>
+ <section class="settingRow"><div><b>COMBAT DAMAGE DISPLAY</b><p>Choose how much impact feedback appears during battle.</p></div><div class="segmented"><button data-damage-mode="full" class="${state.damageDisplay==="full"?"active":""}">FULL</button><button data-damage-mode="clean" class="${state.damageDisplay==="clean"?"active":""}">CLEAN</button></div></section>
+ <div class="settingPreview"><b>${state.damageDisplay==="full"?"Full Combat Feedback":"Clean Combat View"}</b><span>${state.damageDisplay==="full"?"Floating damage, Power/Mighty/Legendary banners and hero passive flashes are shown.":"Floating damage and impact banners are hidden. The compact damage line remains for useful battle information."}</span></div>
+ <div class="row"><button class="gold" id="settingsBack">BACK HOME</button></div></div>`;
+ document.querySelectorAll("[data-damage-mode]").forEach(x=>x.onclick=()=>{state.damageDisplay=x.dataset.damageMode;save();settings()});$("#settingsBack").onclick=home;
+}
+function avatarPicker(){
+ stopTimer();const owned=HEROES.filter(h=>state.owned[h.id]);
+ $("#view").innerHTML=`<div class="panel avatarPanel"><span class="eyebrow">PLAYER PROFILE</span><h2>CHOOSE YOUR AVATAR</h2><p>Your profile portrait can be any hero you own. Summoning a new hero also unlocks that hero here.</p>
+ <div class="avatarGrid">${owned.map(h=>{let o=state.owned[h.id],selected=h.id===state.profileHero;return `<button class="avatarChoice rarity-${h.rarity.toLowerCase()} ${selected?"selected":""}" data-avatar="${h.id}">${heroPortrait(h)}<b>${h.name}</b><small>${h.rarity} • ${"★".repeat(ascensionRank(o.copies)||1)}</small>${selected?"<span>✓ ACTIVE</span>":""}</button>`}).join("")}</div>
+ <div class="row"><button class="gold" id="avatarBack">BACK HOME</button></div></div>`;
+ document.querySelectorAll("[data-avatar]").forEach(x=>x.onclick=()=>{state.profileHero=x.dataset.avatar;save();avatarPicker()});$("#avatarBack").onclick=home;
+}
 function home(){
  let b=boss(state.stage);
- $("#view").innerHTML=`<div class="homeScreen">
+ const ph=profileHero();
+ $("#view").innerHTML=`<div class="homeScreen"><div class="homePlayerTools"><button class="profilePlug" id="profilePlug" aria-label="Choose profile avatar">${heroPortrait(ph)}<span>Lv ${state.accountLevel}</span></button><button class="settingsPlug" id="settingsPlug" aria-label="Settings">⚙</button></div>
   <section class="homeHero">
    <div class="homeCopy"><span class="eyebrow">A WORLD OF LIVING LANGUAGE</span><h2>CHAPTER 1<br><strong>GREENVALE</strong></h2>
    <p>A peaceful valley surrounds the Rootstone World Anchor. Ancient prisons have opened, creatures roam the land, and the Lifeword is beginning to wither.</p>
@@ -351,7 +370,7 @@ function home(){
    <button class="gold" id="giftCodes">🎁 GIFT CODE</button>
   </section>
  </div>`;
- $("#homePlay").onclick=()=>render("battle");$("#homeWorldBoss").onclick=worldBoss;$("#homeHeroes").onclick=()=>render("heroes");const gc=$("#giftCodes");if(gc)gc.onclick=giftCode;
+ $("#profilePlug").onclick=avatarPicker;$("#settingsPlug").onclick=settings;$("#homePlay").onclick=()=>render("battle");$("#homeWorldBoss").onclick=worldBoss;$("#homeHeroes").onclick=()=>render("heroes");const gc=$("#giftCodes");if(gc)gc.onclick=giftCode;
 }
 const GIFT_CODES={
  "WQDEVGEMS":{gems:10000,label:"Developer Summon Cache"},
@@ -402,9 +421,9 @@ function drawFight(){
   const teamCards=state.team.map(id=>{
     const h=HEROES.find(x=>x.id===id),o=state.owned[id];
     if(!h||!o)return "";
-    return `<div class="combatHero hero-${h.class.toLowerCase()} ${strikeHeroes.some(x=>x.id===h.id)?"passiveTriggered":""}"><div class="heroIcon"><span>${h.icon}</span><i></i></div><div><b>${h.name}</b><small>${h.class||"Hero"} • Lv ${o.level}</small><div class="abilityBar"><i style="width:0%"></i></div></div></div>`;
+    return `<div class="combatHero hero-${h.class.toLowerCase()} ${state.damageDisplay!=="clean"&&strikeHeroes.some(x=>x.id===h.id)?"passiveTriggered":""}"><div class="heroIcon"><span>${h.icon}</span><i></i></div><div><b>${h.name}</b><small>${h.class||"Hero"} • Lv ${o.level}</small><div class="abilityBar"><i style="width:0%"></i></div></div></div>`;
   }).join("");
-  $("#view").innerHTML=`<div class="battleScene">
+  $("#view").innerHTML=`<div class="battleScene ${state.damageDisplay==="clean"?"cleanCombat":""}">
     <div class="battleTop">
       <div><small>${fight.tutorial?"TUTORIAL • THE CONCORD FORMS":fight.worldBoss?"WORLD BOSS • SEALED CALAMITY":"CHAPTER 1 • GREENVALE"}</small><b>${fight.tutorial?"First Battle":fight.worldBoss?"UNLIMITED ATTEMPTS • NO ENERGY":"Stage "+state.stage+" / 15"}</b></div>
       <div class="enemyName">${fight.name}</div>
@@ -412,7 +431,7 @@ function drawFight(){
     </div>
     ${fight.worldBoss?`<div class="worldBossScoreBar"><small>DAMAGE THIS ATTEMPT</small><strong>${(fight.score||0).toLocaleString()}</strong></div>`:`<div class="enemyHp"><div style="width:${Math.max(0,fight.hp/fight.max*100)}%"></div><span>${Math.max(0,fight.hp)} / ${fight.max} HP</span></div>`}
     <div class="arena">
-      <div class="bossArt${hitClass} ${fight.worldBoss?"calamityBoss":""}"><span>${fight.icon}</span><i></i>${strikeWord?`<div class="floatingDamage damage-${strikeTier}"><strong>-${strikeDamage.toLocaleString()}</strong><small>${strikeTier==="legendary"?"LEGENDARY WORD!":strikeTier==="epic"?"MIGHTY WORD!":strikeTier==="power"?"POWER WORD":""}</small></div>`:""}</div>
+      <div class="bossArt${hitClass} ${fight.worldBoss?"calamityBoss":""}"><span>${fight.icon}</span><i></i>${strikeWord&&state.damageDisplay!=="clean"?`<div class="floatingDamage damage-${strikeTier}"><strong>-${strikeDamage.toLocaleString()}</strong><small>${strikeTier==="legendary"?"LEGENDARY WORD!":strikeTier==="epic"?"MIGHTY WORD!":strikeTier==="power"?"POWER WORD":""}</small></div>`:""}</div>
       <div class="bossIntel"><b>${fight.tutorial?"Training Encounter":"Boss Intel"}</b><br>${fight.tutorial?"Practice building words and watch how each starter hero contributes. There is no time pressure.":fight.worldBoss?worldBossIntel():traitText(fight.type,fight.cursedInitials||[],fight.lengthResistance||{})} ${fight.disabled?`<strong>Disabled: ${fight.disabled}</strong>`:""}</div>
     </div>
     <div class="synergyBanner">${fight.tutorial?"Pip • Rogue &nbsp;|&nbsp; Mira • Mage &nbsp;|&nbsp; Aurelia • Warrior &nbsp;|&nbsp; Lyra • Cleric — balanced teams have no same-class synergy":activeSynergyText()}</div>
@@ -423,7 +442,7 @@ function drawFight(){
         <div class="word" id="word"></div>
         <div class="row refreshRow"><button class="gold" id="refresh">🔄 NEW LETTERS — ${fight.refreshes<(1+(fight.clericExtraRerolls||0))?"FREE":"💎"+REFRESH_GEM_COST}</button></div>
         <div class="letters">${fight.letters.map((l,i)=>`<button class="tile ${fight.rogueBonusTiles?.has(i)?"bonusTile":""}" data-i="${i}" ${l===fight.disabled?"disabled":""}><span>${l}</span>${fight.rogueBonusTiles?.has(i)?`<small>×2</small>`:""}</button>`).join("")}</div>
-        <div class="damage ${strikeWord?"damagePop":""}" id="damage">${strikeWord?`⚔ ${strikeWord} — ${strikeDamage.toLocaleString()} DAMAGE!${strikeHeroes.length?` <span class="passiveCallout">✦ ${strikeHeroes.map(x=>x.icon+" "+x.name).join(" • ")} PASSIVE</span>`:""}`:""}</div>
+        <div class="damage ${strikeWord?"damagePop":""}" id="damage">${strikeWord?`⚔ ${strikeWord} — ${strikeDamage.toLocaleString()} DAMAGE!${state.damageDisplay!=="clean"&&strikeHeroes.length?` <span class="passiveCallout">✦ ${strikeHeroes.map(x=>x.icon+" "+x.name).join(" • ")} PASSIVE</span>`:""}`:""}</div>
         <div class="row actionRow"><button class="gold" id="clear">CLEAR</button><button class="primary strikeBtn" id="submit">⚔ STRIKE</button></div>
         <p class="notice" id="notice">Click letters in order to build your word.</p>
       </div>
