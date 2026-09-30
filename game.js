@@ -66,6 +66,7 @@ state.redeemedCodes=state.redeemedCodes||[];
 if(state.accountLevel==null)state.accountLevel=1;
 if(state.accountXp==null)state.accountXp=0;
 if(state.accountXpSources==null)state.accountXpSources={story:0,worldBoss:0,pvp:0};
+if(state.worldBossScores==null)state.worldBossScores={};
 if(!state.owned.lyra)state.owned.lyra={copies:1,level:1};
 const ACCOUNT_KEY="wordquest-account-v01";
 let account=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"null");
@@ -274,14 +275,70 @@ function traitText(type,letters=[],resistance={}){
  if(type==="cursedInitials")return `Cursed Initials: words starting with ${letters.join(" or ")} deal 50% damage.`;
  return lengthResistanceText(resistance);
 }
-function render(v){if(v==="home")home();if(v==="battle")battle();if(v==="heroes")heroes();if(v==="summon")summon();if(v==="codex")codex();if(v==="store")store();if(v==="tutorial")tutorial()}
+const WORLD_BOSSES=[
+{id:"gorath",day:1,name:"Gorath, the Devouring Root",icon:"🌳",title:"THE BURIED HUNGER",mechanic:"THICKENING BARK",lore:"An ancient forest calamity sealed beneath a World Anchor. With its prison failing, entire forests have begun to walk.",intel:"Short words are resisted. 6 letters strike normally. 7+ letters gain +25% damage."},
+{id:"veyra",day:2,name:"Veyra, the Thousand-Eyed",icon:"🐍",title:"KEEPER OF TRUE NAMES",mechanic:"WATCHFUL EYES",lore:"A rune serpent sealed after learning the True Names of kings, cities, and gods.",intel:"Three watched starting letters grant +30% damage. The watched letters rotate during battle."},
+{id:"morvane",day:3,name:"Morvane, the Hollow King",icon:"👑",title:"THE FORGOTTEN KING",mechanic:"FORGOTTEN WORDS",lore:"A monarch who stole names and memories until his own name was erased from history.",intel:"Repeating the same starting letter builds resistance. Changing your starting letter restores full damage."},
+{id:"tharos",day:4,name:"Tharos, the Storm Titan",icon:"⚡",title:"THE LIVING TEMPEST",mechanic:"STORM SURGE",lore:"A living thunderstorm once grounded beneath a mountain by colossal runes.",intel:"Every fourth valid word triggers a Surge. Your next three Strikes gain +20%, +35%, then +50% damage."},
+{id:"nythrakk",day:5,name:"Nythrakk, the Word Eater",icon:"📖",title:"DEVOURER OF LANGUAGE",mechanic:"DEVOUR",lore:"A creature that consumes language itself. Civilizations once forgot words simply because it passed nearby.",intel:"Every third valid word mutates a random unused board tile into a new letter. Adapt as the board changes."},
+{id:"azhurath",day:6,name:"Azhurath, the First Dragon",icon:"🐉",title:"THE FIRST WORD MADE FLESH",mechanic:"WORD OF CREATION",lore:"One of the earliest beings shaped by the Lifeword. Its prison became part of the World Anchor network.",intel:"Its rune armor cycles every three words: 7+ letters, a marked letter, exactly 5 letters, then Letter Streak."}
+];
+function availableWorldBosses(){
+ const day=new Date().getDay();return day===0?WORLD_BOSSES:WORLD_BOSSES.filter(b=>b.day===day);
+}
+function worldBoss(){
+ stopTimer();const available=availableWorldBosses(),sunday=new Date().getDay()===0;
+ $("#view").innerHTML=`<div class="panel worldBossHub"><span class="eyebrow">THE SIX SEALED CALAMITIES</span><h2 class="title">WORLD BOSSES</h2><p class="title">${sunday?"CALAMITY DAY — all six prisons are open.":"Today's sealed calamity has broken free."} Attempts are unlimited and cost no Story Energy.</p>
+ <div class="worldBossGrid">${available.map(b=>`<article class="worldBossCard"><div class="worldBossIcon">${b.icon}</div><small>${b.title}</small><h3>${b.name}</h3><b>${b.mechanic}</b><p>${b.lore}</p><p class="bossRule">${b.intel}</p><div class="personalBest">PERSONAL BEST <strong>${(state.worldBossScores[b.id]||0).toLocaleString()}</strong></div><button class="primary" data-world-boss="${b.id}">CHALLENGE</button></article>`).join("")}</div>
+ <p class="notice">Account XP is awarded for setting a new personal record, so repeated attempts reward improvement rather than farming.</p></div>`;
+ document.querySelectorAll("[data-world-boss]").forEach(x=>x.onclick=()=>startWorldBoss(x.dataset.worldBoss));
+}
+function startWorldBoss(id){
+ const b=WORLD_BOSSES.find(x=>x.id===id);if(!b)return;
+ fight={...b,worldBoss:true,max:1e12,hp:1e12,score:0,words:0,timeLeft:60,refreshes:0,used:new Set(),streakLetter:"",streakCount:0,timeBoostUsed:true,disabled:"",letters:board(),rogueBonusTiles:new Set(),warriorDamage:0,clericExtraRerolls:0,worldPhase:0,watched:["S","T","R"],surge:0};
+ let mageCount=teamClassCount("Mage");fight.timeLeft+=mageCount>=4?25:mageCount>=2?10:0;
+ let rogueCount=teamClassCount("Rogue");fight.rogueBonusCount=rogueCount>=4?6:rogueCount>=2?2:0;fight.rogueBonusTiles=randomBonusTiles(fight.rogueBonusCount);
+ let warriorCount=teamClassCount("Warrior");fight.warriorDamage=warriorCount>=4?10:warriorCount>=2?5:0;
+ let clericCount=teamClassCount("Cleric");fight.clericExtraRerolls=clericCount>=2?1:0;
+ selected=[];drawFight();startTimer();
+}
+function worldBossIntel(){
+ if(!fight?.worldBoss)return "";
+ if(fight.id==="veyra")return `Watched letters: <strong>${fight.watched.join(" • ")}</strong> — start with one for +30%.`;
+ if(fight.id==="tharos")return fight.surge?`⚡ STORM SURGE ACTIVE — ${fight.surge} empowered Strike(s) remain.`:"Every fourth valid word awakens a Storm Surge.";
+ if(fight.id==="azhurath"){const phases=["7+ LETTERS","MARKED LETTER S","EXACTLY 5 LETTERS","LETTER STREAK"];return `Rune Armor: <strong>${phases[fight.worldPhase%4]}</strong>`;}
+ return fight.intel;
+}
+function applyWorldBossMechanic(w,d){
+ if(!fight?.worldBoss)return d;
+ if(fight.id==="gorath"){if(w.length<=3)d*=.55;else if(w.length<=5)d*=.8;else if(w.length>=7)d*=1.25;}
+ if(fight.id==="veyra"&&fight.watched.includes(w[0]))d*=1.3;
+ if(fight.id==="morvane"&&fight.streakCount>1)d*=Math.max(.5,1-(fight.streakCount-1)*.12);
+ if(fight.id==="tharos"&&fight.surge){const boosts={3:1.2,2:1.35,1:1.5};d*=boosts[fight.surge]||1;fight.surge--;}
+ if(fight.id==="azhurath"){let p=fight.worldPhase%4;if((p===0&&w.length>=7)||(p===1&&w.includes("S"))||(p===2&&w.length===5)||(p===3&&fight.streakCount>1))d*=1.5;}
+ return d;
+}
+function advanceWorldBoss(w){
+ if(!fight?.worldBoss)return;fight.words++;
+ if(fight.id==="veyra"&&fight.words%3===0){const pools=[["N","L","E"],["A","R","M"],["C","D","I"],["S","T","R"]];fight.watched=pools[(fight.words/3)%pools.length|0];}
+ if(fight.id==="tharos"&&fight.words%4===0)fight.surge=3;
+ if(fight.id==="nythrakk"&&fight.words%3===0){let free=[...Array(16).keys()].filter(i=>!selected.includes(i));if(free.length){let i=free[Math.floor(Math.random()*free.length)];fight.letters[i]=weightedLetter();}}
+ if(fight.id==="azhurath"&&fight.words%3===0)fight.worldPhase=(fight.worldPhase+1)%4;
+}
+function finishWorldBoss(){
+ stopTimer();const b=WORLD_BOSSES.find(x=>x.id===fight.id),score=fight.score||0,old=state.worldBossScores[b.id]||0,isRecord=score>old;
+ let xp=0,levels=0;if(isRecord){state.worldBossScores[b.id]=score;xp=Math.min(1500,250+Math.floor((score-old)/25));levels=grantAccountXp(xp,"worldBoss");}save();
+ $("#view").innerHTML=`<div class="panel worldBossResult"><div class="boss">${b.icon}</div><span class="eyebrow">${isRecord?"NEW PERSONAL RECORD":"CALAMITY CHALLENGE COMPLETE"}</span><h2>${b.name}</h2><div class="worldScore">${score.toLocaleString()}</div><p>damage dealt</p><p>${isRecord?`⭐ +${xp} Account XP${levels?` • ACCOUNT LEVEL +${levels}`:""}`:`Personal Best: ${old.toLocaleString()} — beat it to earn World Boss XP.`}</p><div class="row"><button class="primary" id="wbAgain">TRY AGAIN</button><button class="gold" id="wbHub">WORLD BOSSES</button></div></div>`;
+ $("#wbAgain").onclick=()=>startWorldBoss(b.id);$("#wbHub").onclick=worldBoss;fight=null;
+}
+function render(v){if(v==="home")home();if(v==="battle")battle();if(v==="heroes")heroes();if(v==="summon")summon();if(v==="codex")codex();if(v==="store")store();if(v==="tutorial")tutorial();if(v==="worldboss")worldBoss()}
 function home(){
  let b=boss(state.stage);
  $("#view").innerHTML=`<div class="homeScreen">
   <section class="homeHero">
    <div class="homeCopy"><span class="eyebrow">A WORLD OF LIVING LANGUAGE</span><h2>CHAPTER 1<br><strong>GREENVALE</strong></h2>
    <p>A peaceful valley surrounds the Rootstone World Anchor. Ancient prisons have opened, creatures roam the land, and the Lifeword is beginning to wither.</p>
-   <button class="primary homePlay" id="homePlay">PLAY STORY</button> <button class="gold" id="homeTutorial">HOW TO PLAY</button></div>
+   <button class="primary homePlay" id="homePlay">PLAY STORY</button> <button class="gold" id="homeWorldBoss">WORLD BOSSES</button> <button class="gold" id="homeTutorial">HOW TO PLAY</button></div>
    <div class="anchorGlow"><div class="anchorRune">✦</div><b>ROOTSTONE</b><small>WORLD ANCHOR</small></div>
   </section>
   <section class="homeStrip">
@@ -293,7 +350,7 @@ function home(){
    <button class="gold" id="giftCodes">🎁 GIFT CODE</button>
   </section>
  </div>`;
- $("#homePlay").onclick=()=>render("battle");$("#homeHeroes").onclick=()=>render("heroes");const gc=$("#giftCodes");if(gc)gc.onclick=giftCode;
+ $("#homePlay").onclick=()=>render("battle");$("#homeWorldBoss").onclick=worldBoss;$("#homeHeroes").onclick=()=>render("heroes");const gc=$("#giftCodes");if(gc)gc.onclick=giftCode;
 }
 const GIFT_CODES={
  "WQDEVGEMS":{gems:10000,label:"Developer Summon Cache"},
@@ -345,14 +402,14 @@ function drawFight(){
   }).join("");
   $("#view").innerHTML=`<div class="battleScene">
     <div class="battleTop">
-      <div><small>${fight.tutorial?"TUTORIAL • THE CONCORD FORMS":"CHAPTER 1 • GREENVALE"}</small><b>${fight.tutorial?"First Battle":"Stage "+state.stage+" / 15"}</b></div>
+      <div><small>${fight.tutorial?"TUTORIAL • THE CONCORD FORMS":fight.worldBoss?"WORLD BOSS • SEALED CALAMITY":"CHAPTER 1 • GREENVALE"}</small><b>${fight.tutorial?"First Battle":fight.worldBoss?"UNLIMITED ATTEMPTS • NO ENERGY":"Stage "+state.stage+" / 15"}</b></div>
       <div class="enemyName">${fight.name}</div>
       <div class="combatTimer">${fight.tutorial?"∞ NO TIME LIMIT":`⏱ <span id="timer">${formatTime(fight.timeLeft)}</span>`}</div>
     </div>
-    <div class="enemyHp"><div style="width:${Math.max(0,fight.hp/fight.max*100)}%"></div><span>${Math.max(0,fight.hp)} / ${fight.max} HP</span></div>
+    ${fight.worldBoss?`<div class="worldBossScoreBar"><small>DAMAGE THIS ATTEMPT</small><strong>${(fight.score||0).toLocaleString()}</strong></div>`:`<div class="enemyHp"><div style="width:${Math.max(0,fight.hp/fight.max*100)}%"></div><span>${Math.max(0,fight.hp)} / ${fight.max} HP</span></div>`}
     <div class="arena">
       <div class="bossArt">${fight.icon}</div>
-      <div class="bossIntel"><b>${fight.tutorial?"Training Encounter":"Boss Intel"}</b><br>${fight.tutorial?"Practice building words and watch how each starter hero contributes. There is no time pressure.":traitText(fight.type,fight.cursedInitials||[],fight.lengthResistance||{})} ${fight.disabled?`<strong>Disabled: ${fight.disabled}</strong>`:""}</div>
+      <div class="bossIntel"><b>${fight.tutorial?"Training Encounter":"Boss Intel"}</b><br>${fight.tutorial?"Practice building words and watch how each starter hero contributes. There is no time pressure.":fight.worldBoss?worldBossIntel():traitText(fight.type,fight.cursedInitials||[],fight.lengthResistance||{})} ${fight.disabled?`<strong>Disabled: ${fight.disabled}</strong>`:""}</div>
     </div>
     <div class="synergyBanner">${fight.tutorial?"Pip • Rogue &nbsp;|&nbsp; Mira • Mage &nbsp;|&nbsp; Aurelia • Warrior &nbsp;|&nbsp; Lyra • Cleric — balanced teams have no same-class synergy":activeSynergyText()}</div>
     <div class="battleBody">
@@ -367,7 +424,7 @@ function drawFight(){
         <p class="notice" id="notice">Click letters in order to build your word.</p>
       </div>
       <div class="boostRail">
-        ${fight.tutorial?`<b>TUTORIAL</b><small>Take as long as you need.</small><div class="tutorialTip">Try different word lengths and repeat a starting letter to build a Letter Streak.</div>`:`<b>+30 SECONDS</b><small>One time per battle</small>${!fight.timeBoostUsed?`<button onclick="addTimeBoost('ad')">▶ WATCH AD</button><span>OR</span><button onclick="addTimeBoost('gems')">💎 15 GEMS</button>`:`<div class="boostUsed">TIME BOOST USED</div>`}`}
+        ${fight.tutorial?`<b>TUTORIAL</b><small>Take as long as you need.</small><div class="tutorialTip">Try different word lengths and repeat a starting letter to build a Letter Streak.</div>`:fight.worldBoss?`<b>${fight.mechanic}</b><small>${fight.intel}</small><div class="tutorialTip">Personal Best: ${(state.worldBossScores[fight.id]||0).toLocaleString()}</div>`:`<b>+30 SECONDS</b><small>One time per battle</small>${!fight.timeBoostUsed?`<button onclick="addTimeBoost('ad')">▶ WATCH AD</button><span>OR</span><button onclick="addTimeBoost('gems')">💎 15 GEMS</button>`:`<div class="boostUsed">TIME BOOST USED</div>`}`}
       </div>
     </div>
   </div>`;
@@ -401,7 +458,7 @@ else{fight.streakLetter=first;fight.streakCount=1}
 let streakBonus=1+Math.max(0,fight.streakCount-1)*0.10;
 let rogueHits=selected.filter(i=>fight.rogueBonusTiles?.has(i)).length;
 let rogueBonus=Math.pow(2,rogueHits);
-let d=baseDamage(w.length);if(fight.type==="cursedInitials"&&fight.cursedInitials?.includes(w[0]))d*=.5;let lengthResist=w.length<=5?(fight.lengthResistance?.[w.length]||0):0;if(lengthResist)d*=1-lengthResist;state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;d*=heroMultiplier(h,w,o.copies)});d=Math.round((Math.round(d*streakBonus*rogueBonus)+(fight.warriorDamage||0))*accountDamageMultiplier());fight.hp-=d;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!${fight.streakCount>1?` 🔥 ${first} STREAK ×${fight.streakCount} (+${(fight.streakCount-1)*10}%)`:""}`;selected=[];save();if(fight.hp<=0)return victory();drawFight()}
+let d=baseDamage(w.length);if(fight.type==="cursedInitials"&&fight.cursedInitials?.includes(w[0]))d*=.5;let lengthResist=w.length<=5?(fight.lengthResistance?.[w.length]||0):0;if(lengthResist)d*=1-lengthResist;state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;d*=heroMultiplier(h,w,o.copies)});d=applyWorldBossMechanic(w,d);d=Math.round((Math.round(d*streakBonus*rogueBonus)+(fight.warriorDamage||0))*accountDamageMultiplier());if(fight.worldBoss){fight.score=(fight.score||0)+d;advanceWorldBoss(w)}else fight.hp-=d;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!${fight.streakCount>1?` 🔥 ${first} STREAK ×${fight.streakCount} (+${(fight.streakCount-1)*10}%)`:""}`;selected=[];save();if(!fight.worldBoss&&fight.hp<=0)return victory();drawFight()}
 function victory(){stopTimer();if(fight?.tutorial){state.tutorialComplete=true;save();fight=null;selected=[];$("#view").innerHTML=`<div class="panel tutorialVictory"><h2 class="title">THE CONCORD IS READY!</h2><div class="boss">🏆</div><p class="title">You learned the core WordQuest battle loop with <b>Pip, Mira, Aurelia, and Lyra</b>.</p><p class="title">Your first real expedition is waiting in Greenvale. Story battles now use Energy and a timer.</p><div class="row"><button class="primary" id="tutorialContinue">ENTER GREENVALE</button><button class="gold" id="tutorialReview">REVIEW TUTORIAL</button></div></div>`;$("#tutorialContinue").onclick=battle;$("#tutorialReview").onclick=tutorial;return}let reward=40+state.stage*10;if(fight.clericGoldBonus)reward=Math.round(reward*(1+fight.clericGoldBonus));state.coins+=reward;state.bestiary=[...new Set([...state.bestiary,fight.name])];let completed=state.stage;
 let storyXp=120+completed*12,levelUps=grantAccountXp(storyXp,"story");
 let energyReward=[5,10,15].includes(completed)?25:0;
