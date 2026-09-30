@@ -397,12 +397,12 @@ function activeSynergyText(){
 function drawFight(){
   if(!fight.letters)fight.letters=board();
   const hitClass=fight.hitFlash?" bossHit":"";
-  const strikeWord=fight.lastStrike?.word||"",strikeDamage=fight.lastStrike?.damage||0;
+  const strikeWord=fight.lastStrike?.word||"",strikeDamage=fight.lastStrike?.damage||0,strikeTier=fight.lastStrike?.tier||"normal",strikeHeroes=fight.lastStrike?.heroes||[];
   fight.hitFlash=false;
   const teamCards=state.team.map(id=>{
     const h=HEROES.find(x=>x.id===id),o=state.owned[id];
     if(!h||!o)return "";
-    return `<div class="combatHero hero-${h.class.toLowerCase()}"><div class="heroIcon"><span>${h.icon}</span><i></i></div><div><b>${h.name}</b><small>${h.class||"Hero"} • Lv ${o.level}</small><div class="abilityBar"><i style="width:0%"></i></div></div></div>`;
+    return `<div class="combatHero hero-${h.class.toLowerCase()} ${strikeHeroes.some(x=>x.id===h.id)?"passiveTriggered":""}"><div class="heroIcon"><span>${h.icon}</span><i></i></div><div><b>${h.name}</b><small>${h.class||"Hero"} • Lv ${o.level}</small><div class="abilityBar"><i style="width:0%"></i></div></div></div>`;
   }).join("");
   $("#view").innerHTML=`<div class="battleScene">
     <div class="battleTop">
@@ -412,7 +412,7 @@ function drawFight(){
     </div>
     ${fight.worldBoss?`<div class="worldBossScoreBar"><small>DAMAGE THIS ATTEMPT</small><strong>${(fight.score||0).toLocaleString()}</strong></div>`:`<div class="enemyHp"><div style="width:${Math.max(0,fight.hp/fight.max*100)}%"></div><span>${Math.max(0,fight.hp)} / ${fight.max} HP</span></div>`}
     <div class="arena">
-      <div class="bossArt${hitClass} ${fight.worldBoss?"calamityBoss":""}"><span>${fight.icon}</span><i></i></div>
+      <div class="bossArt${hitClass} ${fight.worldBoss?"calamityBoss":""}"><span>${fight.icon}</span><i></i>${strikeWord?`<div class="floatingDamage damage-${strikeTier}"><strong>-${strikeDamage.toLocaleString()}</strong><small>${strikeTier==="legendary"?"LEGENDARY WORD!":strikeTier==="epic"?"MIGHTY WORD!":strikeTier==="power"?"POWER WORD":""}</small></div>`:""}</div>
       <div class="bossIntel"><b>${fight.tutorial?"Training Encounter":"Boss Intel"}</b><br>${fight.tutorial?"Practice building words and watch how each starter hero contributes. There is no time pressure.":fight.worldBoss?worldBossIntel():traitText(fight.type,fight.cursedInitials||[],fight.lengthResistance||{})} ${fight.disabled?`<strong>Disabled: ${fight.disabled}</strong>`:""}</div>
     </div>
     <div class="synergyBanner">${fight.tutorial?"Pip • Rogue &nbsp;|&nbsp; Mira • Mage &nbsp;|&nbsp; Aurelia • Warrior &nbsp;|&nbsp; Lyra • Cleric — balanced teams have no same-class synergy":activeSynergyText()}</div>
@@ -423,7 +423,7 @@ function drawFight(){
         <div class="word" id="word"></div>
         <div class="row refreshRow"><button class="gold" id="refresh">🔄 NEW LETTERS — ${fight.refreshes<(1+(fight.clericExtraRerolls||0))?"FREE":"💎"+REFRESH_GEM_COST}</button></div>
         <div class="letters">${fight.letters.map((l,i)=>`<button class="tile ${fight.rogueBonusTiles?.has(i)?"bonusTile":""}" data-i="${i}" ${l===fight.disabled?"disabled":""}><span>${l}</span>${fight.rogueBonusTiles?.has(i)?`<small>×2</small>`:""}</button>`).join("")}</div>
-        <div class="damage ${strikeWord?"damagePop":""}" id="damage">${strikeWord?`⚔ ${strikeWord} — ${strikeDamage} DAMAGE!`:""}</div>
+        <div class="damage ${strikeWord?"damagePop":""}" id="damage">${strikeWord?`⚔ ${strikeWord} — ${strikeDamage.toLocaleString()} DAMAGE!${strikeHeroes.length?` <span class="passiveCallout">✦ ${strikeHeroes.map(x=>x.icon+" "+x.name).join(" • ")} PASSIVE</span>`:""}`:""}</div>
         <div class="row actionRow"><button class="gold" id="clear">CLEAR</button><button class="primary strikeBtn" id="submit">⚔ STRIKE</button></div>
         <p class="notice" id="notice">Click letters in order to build your word.</p>
       </div>
@@ -462,7 +462,7 @@ else{fight.streakLetter=first;fight.streakCount=1}
 let streakBonus=1+Math.max(0,fight.streakCount-1)*0.10;
 let rogueHits=selected.filter(i=>fight.rogueBonusTiles?.has(i)).length;
 let rogueBonus=Math.pow(2,rogueHits);
-let d=baseDamage(w.length);if(fight.type==="cursedInitials"&&fight.cursedInitials?.includes(w[0]))d*=.5;let lengthResist=w.length<=5?(fight.lengthResistance?.[w.length]||0):0;if(lengthResist)d*=1-lengthResist;state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;d*=heroMultiplier(h,w,o.copies)});d=applyWorldBossMechanic(w,d);d=Math.round((Math.round(d*streakBonus*rogueBonus)+(fight.warriorDamage||0))*accountDamageMultiplier());if(fight.worldBoss){fight.score=(fight.score||0)+d;advanceWorldBoss(w)}else fight.hp-=d;fight.lastStrike={word:w,damage:d};fight.hitFlash=true;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!${fight.streakCount>1?` 🔥 ${first} STREAK ×${fight.streakCount} (+${(fight.streakCount-1)*10}%)`:""}`;selected=[];save();if(!fight.worldBoss&&fight.hp<=0)return victory();drawFight()}
+let d=baseDamage(w.length);if(fight.type==="cursedInitials"&&fight.cursedInitials?.includes(w[0]))d*=.5;let lengthResist=w.length<=5?(fight.lengthResistance?.[w.length]||0):0;if(lengthResist)d*=1-lengthResist;let triggeredHeroes=[];state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;let hm=heroMultiplier(h,w,o.copies);if(hm>1)triggeredHeroes.push({id:h.id,name:h.name,icon:h.icon});d*=hm});d=applyWorldBossMechanic(w,d);d=Math.round((Math.round(d*streakBonus*rogueBonus)+(fight.warriorDamage||0))*accountDamageMultiplier());if(fight.worldBoss){fight.score=(fight.score||0)+d;advanceWorldBoss(w)}else fight.hp-=d;fight.lastStrike={word:w,damage:d,tier:w.length>=10?"legendary":w.length>=7?"epic":w.length===6?"power":"normal",heroes:triggeredHeroes};fight.hitFlash=true;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!${fight.streakCount>1?` 🔥 ${first} STREAK ×${fight.streakCount} (+${(fight.streakCount-1)*10}%)`:""}`;selected=[];save();if(!fight.worldBoss&&fight.hp<=0)return victory();drawFight()}
 function victory(){stopTimer();if(fight?.tutorial){state.tutorialComplete=true;save();fight=null;selected=[];$("#view").innerHTML=`<div class="panel tutorialVictory"><h2 class="title">THE CONCORD IS READY!</h2><div class="boss">🏆</div><p class="title">You learned the core WordQuest battle loop with <b>Pip, Mira, Aurelia, and Lyra</b>.</p><p class="title">Your first real expedition is waiting in Greenvale. Story battles now use Energy and a timer.</p><div class="row"><button class="primary" id="tutorialContinue">ENTER GREENVALE</button><button class="gold" id="tutorialReview">REVIEW TUTORIAL</button></div></div>`;$("#tutorialContinue").onclick=battle;$("#tutorialReview").onclick=tutorial;return}let reward=40+state.stage*10;if(fight.clericGoldBonus)reward=Math.round(reward*(1+fight.clericGoldBonus));state.coins+=reward;state.bestiary=[...new Set([...state.bestiary,fight.name])];let completed=state.stage;
 let storyXp=120+completed*12,levelUps=grantAccountXp(storyXp,"story");
 let energyReward=[5,10,15].includes(completed)?25:0;
