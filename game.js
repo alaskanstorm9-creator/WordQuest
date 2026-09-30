@@ -267,8 +267,8 @@ function pull(n){
  const pool=r=>HEROES.filter(h=>h.rarity===r);
  for(let i=0;i<n;i++){
   state.pity++;let r=Math.random(),rarity;
-  if(state.pity>=50||r<.03){rarity="Ultra";state.pity=0}
-  else if(r<.18)rarity="Rare";else if(r<.48)rarity="Uncommon";else rarity="Common";
+  if(state.pity>=50||r<.05){rarity="Ultra";state.pity=0}
+  else if(r<.25)rarity="Rare";else if(r<.65)rarity="Uncommon";else rarity="Common";
   let p=pool(rarity),h=p[Math.floor(Math.random()*p.length)];
   state.owned[h.id]??={copies:0,level:1};state.owned[h.id].copies++;out.push(h.icon+" "+h.name);
  }
