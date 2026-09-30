@@ -56,7 +56,7 @@ const ENERGY_REFILL_AMOUNT=50;
 const ENERGY_REGEN_MS=2*60*1000;
 const TIME_BOOST_SECONDS=30;
 const TIME_BOOST_GEM_COST=15;
-const baseDamage=n=>n<=2?5:n===3?10:n===4?18:n===5?30:n===6?45:n===7?65:90+(n-8)*20;
+const baseDamage=n=>n<=2?5:n===3?10:n===4?18:n===5?30:n===6?45:n===7?75:n===8?120:n===9?180:n===10?250:250+(n-10)*80;
 let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,coins:500,energy:50,stage:1,owned:{pip:{copies:1,level:1},mira:{copies:1,level:1},aurelia:{copies:1,level:1}},team:["pip","mira","aurelia"],codex:[],bestiary:[],pity:0};
 if(state.energyCap==null)state.energyCap=ENERGY_CAP;
 if(state.rarePity==null)state.rarePity=0;
@@ -320,7 +320,7 @@ function tutorial(){
  $("#view").innerHTML=`<div class="panel tutorial"><h2 class="title">HOW TO PLAY WORDQUEST</h2>
  <div class="tutorialGrid">
  <section><b>① BUILD A WORD</b><p>Tap letter tiles in order, then press <strong>STRIKE</strong>. Every valid word damages the enemy. A word can only score once on the current board.</p></section>
- <section><b>② BASE WORD DAMAGE</b><p>2 letters: 5 • 3: 10 • 4: 18 • 5: 30 • 6: 45 • 7: 65 • 8: 90. Each letter beyond 8 adds 20 damage.</p></section>
+ <section><b>② BASE WORD DAMAGE</b><p>2 letters: 5 • 3: 10 • 4: 18 • 5: 30 • 6: 45 • 7: 75 • 8: 120 • 9: 180 • 10: 250. Each letter beyond 10 adds 80 damage.</p></section>
  <section><b>③ LETTER STREAK</b><p>Start consecutive valid words with the same letter: 2nd +10%, 3rd +20%, 4th +30%, 5th and beyond +40%. Changing the starting letter or rerolling resets the streak.</p></section>
  <section><b>④ HERO PASSIVES</b><p>Your four heroes can multiply damage when a word matches their specialty. Check each Hero card for its word-length or letter condition.</p></section>
  <section><b>⑤ CLASS SYNERGY</b><p><strong>Mage:</strong> 2 = +10 sec, 4 = +25 sec in Story. <strong>Rogue:</strong> 2 = two ×2 tiles, 4 = six ×2 tiles. <strong>Warrior:</strong> 2 = +5 Strike damage, 4 = +10. <strong>Cleric:</strong> 2 = +1 free reroll, 4 = +1 reroll and +20% Coins.</p></section>
