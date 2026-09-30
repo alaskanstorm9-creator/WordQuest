@@ -358,7 +358,7 @@ function summon(){
  <p class="title">Call heroes through the Lifeword. Duplicates increase copy count for Ascension.</p>
  <div class="summonMode"><b>SUMMON PRESENTATION</b><button data-anim="full" class="${state.summonAnimation==="full"?"active":""}">✨ FULL ANIMATION</button><button data-anim="quick" class="${state.summonAnimation==="quick"?"active":""}">⚡ QUICK SUMMON</button></div>
  <div class="row"><button class="gold" data-pull="1">SUMMON ×1<br>💎100</button><button class="primary" data-pull="10">SUMMON ×10<br>💎1,000</button></div>
- <p class="notice" id="pullResult"></p><p class="title">Ultra 5% • Rare 20% • Uncommon 40% • Common 35%<br>Rare+ guarantee: ${state.rarePity}/10 • Ultra pity: ${state.pity}/50</p></div>`;
+ <p class="notice" id="pullResult"></p><p class="title">Ultra 1% • Rare 5% • Uncommon 34% • Common 60%<br>Rare+ guarantee: ${state.rarePity}/10 • Ultra pity: ${state.pity}/50</p></div>`;
  document.querySelectorAll("[data-pull]").forEach(b=>b.onclick=()=>pull(+b.dataset.pull));
  document.querySelectorAll("[data-anim]").forEach(b=>b.onclick=()=>{state.summonAnimation=b.dataset.anim;save();summon()});
 }
@@ -376,8 +376,8 @@ function pull(n){
  state.gems-=cost;let out=[];const pool=r=>HEROES.filter(h=>h.rarity===r);
  for(let i=0;i<n;i++){
   state.pity++;state.rarePity++;let r=Math.random(),rarity;
-  if(state.pity>=50||r<.05){rarity="Ultra";state.pity=0}
-  else if(r<.25)rarity="Rare";else if(r<.65)rarity="Uncommon";else rarity="Common";
+  if(state.pity>=50||r<.01){rarity="Ultra";state.pity=0}
+  else if(r<.06)rarity="Rare";else if(r<.40)rarity="Uncommon";else rarity="Common";
   if(state.rarePity>=10){if(rarity==="Common"||rarity==="Uncommon")rarity="Rare";state.rarePity=0}
   let p=pool(rarity),h=p[Math.floor(Math.random()*p.length)];
   state.owned[h.id]??={copies:0,level:1};state.owned[h.id].copies++;out.push(h);
