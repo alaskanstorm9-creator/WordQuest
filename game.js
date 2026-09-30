@@ -1,8 +1,8 @@
 const HEROES=[
-{id:"pip",name:"Pip Shadowstep",class:"Rogue",rarity:"Common",icon:"🐈‍⬛",ability:"3–5 letter words +5%",min:3,max:4,min:3,max:5,mult:1.05,theme:"Hermes",lore:"A streetwise courier from Greenvale who stole a rune-key meant for the gods and became the first mortal drawn into the War of Two Pantheons."},
+{id:"pip",name:"Pip Shadowstep",class:"Rogue",rarity:"Rare",icon:"🐈‍⬛",ability:"3–5 letter words +5%",min:3,max:4,min:3,max:5,mult:1.05,theme:"Hermes",lore:"A streetwise courier from Greenvale who stole a rune-key meant for the gods and became the first mortal drawn into the War of Two Pantheons."},
 {id:"skadi",name:"Skadi Runeweaver",class:"Mage",rarity:"Common",icon:"❄️",ability:"3–4 letter words +5%",min:4,max:4,min:3,max:4,mult:1.05,theme:"Skadi",lore:"A winter seer who reads prophecy in frost. She believes the broken World-Rune can prevent a second divine war."},
 {id:"leander",name:"Leander Ashshield",class:"Warrior",rarity:"Common",icon:"🛡️",ability:"2–4 letter words +5%",min:3,max:3,min:2,max:4,mult:1.05,theme:"Ares",lore:"A disciplined hoplite descended from a disgraced war cult. Leander fights to prove courage need not become cruelty."},
-{id:"lyra",name:"Lyra Dawnkeeper",class:"Cleric",rarity:"Common",icon:"☀️",ability:"4+ letter words +10%",min:5,max:5,min:4,max:99,mult:1.1,theme:"Apollo",lore:"Keeper of a sun-temple whose oracle heard both the Greek Fates and Norse Norns speak the same impossible prophecy."},
+{id:"lyra",name:"Lyra Dawnkeeper",class:"Cleric",rarity:"Rare",icon:"☀️",ability:"4+ letter words +10%",min:5,max:5,min:4,max:99,mult:1.1,theme:"Apollo",lore:"Keeper of a sun-temple whose oracle heard both the Greek Fates and Norse Norns speak the same impossible prophecy."},
 {id:"fen",name:"Fen Quickknife",class:"Rogue",rarity:"Common",icon:"🗡️",ability:"Words with S +10%",letters:"S",mult:1.1,theme:"Loki",lore:"A charming thief who claims Loki taught him three lies and one truth. No one agrees which lesson WordQuest is."},
 {id:"runa",name:"Runa Ravensight",class:"Mage",rarity:"Common",icon:"🐦‍⬛",ability:"5+ letter words +10%",min:6,max:99,min:5,max:99,mult:1.1,theme:"Odin",lore:"A young rune-reader followed by two suspicious ravens. Their visions always point toward the vanished bridge between realms."},
 {id:"brun",name:"Brun Ironoak",class:"Warrior",rarity:"Common",icon:"🪓",ability:"3–5 letter words +5%",min:4,max:4,min:3,max:5,mult:1.05,theme:"Thor",lore:"A village smith who forged his hammer from a lightning-split oak and joined Lyra after monsters descended on Greenvale."},
@@ -10,7 +10,7 @@ const HEROES=[
 {id:"eir",name:"Eir Kindhand",class:"Cleric",rarity:"Common",icon:"🌿",ability:"4+ letter words +10%",min:4,max:5,min:4,max:99,mult:1.1,theme:"Eir",lore:"A battlefield healer who follows the old northern mercy rites and refuses to let the gods spend mortal lives cheaply."},
 {id:"orren",name:"Orren Sparkstaff",class:"Mage",rarity:"Common",icon:"✨",ability:"Words with R +10%",letters:"R",mult:1.1,theme:"Hermes",lore:"An apprentice who discovered that spoken letters can awaken dormant divine runes."},
 
-{id:"mira",name:"Mira Moonscribe",class:"Mage",rarity:"Uncommon",icon:"🔮",ability:"4–6 letter words +15%",min:5,max:5,min:4,max:6,mult:1.15,theme:"Hecate",lore:"A moonlit scholar who maps crossroads between Midgard and the Greek underworld. She recognizes Pip's stolen rune-key."},
+{id:"mira",name:"Mira Moonscribe",class:"Mage",rarity:"Rare",icon:"🔮",ability:"4–6 letter words +15%",min:5,max:5,min:4,max:6,mult:1.15,theme:"Hecate",lore:"A moonlit scholar who maps crossroads between Midgard and the Greek underworld. She recognizes Pip's stolen rune-key."},
 {id:"sylvi",name:"Sylvi Foxcloak",class:"Rogue",rarity:"Uncommon",icon:"🦊",ability:"2–4 letter words +10%",min:3,max:3,min:2,max:4,mult:1.1,theme:"Loki",lore:"A northern infiltrator whose enchanted cloak was sewn from threads won in a wager with a trickster spirit."},
 {id:"dorian",name:"Dorian Spearborn",class:"Warrior",rarity:"Uncommon",icon:"🔱",ability:"5+ letter words +20%",min:6,max:6,min:5,max:99,mult:1.2,theme:"Athena",lore:"A tactician from an island polis who studies battles as puzzles and suspects the gods are being manipulated."},
 {id:"astrid",name:"Astrid Valkyr",class:"Cleric",rarity:"Uncommon",icon:"🪽",ability:"6+ letter words +25%",min:7,max:99,min:6,max:99,mult:1.25,theme:"Valkyrie",lore:"A mortal shrine-warden who sees the paths of fallen heroes but has begun finding souls that belong to neither pantheon."},
@@ -57,12 +57,13 @@ const ENERGY_REGEN_MS=2*60*1000;
 const TIME_BOOST_SECONDS=30;
 const TIME_BOOST_GEM_COST=15;
 const baseDamage=n=>n<=2?5:n===3?10:n===4?18:n===5?30:n===6?45:n===7?75:n===8?120:n===9?180:n===10?250:250+(n-10)*80;
-let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,coins:500,energy:50,stage:1,owned:{pip:{copies:1,level:1},mira:{copies:1,level:1},aurelia:{copies:1,level:1}},team:["pip","mira","aurelia"],codex:[],bestiary:[],pity:0};
+let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,coins:500,energy:50,stage:1,owned:{pip:{copies:1,level:1},mira:{copies:1,level:1},aurelia:{copies:1,level:1},lyra:{copies:1,level:1}},team:["pip","mira","aurelia","lyra"],codex:[],bestiary:[],pity:0};
 if(state.energyCap==null)state.energyCap=ENERGY_CAP;
 if(state.rarePity==null)state.rarePity=0;
 if(state.summonAnimation==null)state.summonAnimation="full";
 if(state.tutorialComplete==null)state.tutorialComplete=false;
 state.redeemedCodes=state.redeemedCodes||[];
+if(!state.owned.lyra)state.owned.lyra={copies:1,level:1};
 const ACCOUNT_KEY="wordquest-account-v01";
 let account=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"null");
 function accountId(){return "WQ-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,7).toUpperCase()}
@@ -365,20 +366,31 @@ function heroes(filter=heroFilter){
  heroFilter=filter;
  const visible=filter==="All"?HEROES:HEROES.filter(h=>h.class===filter);
  const ownedCount=HEROES.filter(h=>state.owned[h.id]).length;
+ const slots=[0,1,2,3].map(i=>{const id=state.team[i],h=HEROES.find(x=>x.id===id);return h
+  ?`<div class="teamSlot filled rarity-${h.rarity.toLowerCase()}">${heroPortrait(h)}<div><small>SLOT ${i+1}</small><b>${h.name}</b><span>${h.class} • ${h.rarity}</span></div><button data-remove-slot="${i}">REMOVE</button></div>`
+  :`<div class="teamSlot empty"><div class="emptyPortrait">+</div><div><small>SLOT ${i+1}</small><b>EMPTY</b><span>Select an owned hero below</span></div></div>`}).join("");
  $("#view").innerHTML=`<div class="panel heroLibrary"><div class="libraryHead"><div><h2>HEROES</h2><p>${ownedCount} / 40 DISCOVERED</p></div>
  <div class="heroFilters">${["All","Mage","Rogue","Warrior","Cleric"].map(x=>`<button data-filter="${x}" class="${x===filter?"active":""}">${x}</button>`).join("")}</div></div>
+ <section class="teamEditor"><div class="teamEditorHead"><div><span class="eyebrow">ACTIVE CONCORD</span><h3>YOUR 4-HERO TEAM</h3></div><b>${state.team.length} / 4</b></div>
+ <p>Remove a hero from a slot, then choose an owned hero below to fill the opening.</p><div class="teamSlots">${slots}</div></section>
  <div class="heroes">${visible.map(h=>{let o=state.owned[h.id],onTeam=state.team.includes(h.id);return `<div class="card rarity-${h.rarity.toLowerCase()} ${!o?"locked":""}">${heroPortrait(h)}
  <div class="heroCardTitle"><b>${h.name}</b><span>${h.class}</span></div><div class="rarity">${h.rarity} ${"★".repeat(Math.max(1,ascensionRank(o?.copies||0)+1))}</div>
  <p class="abilityText">${h.ability}</p><p class="heroLore">${h.lore}</p>
- ${o?`<p>Lv. ${o.level} • Copies ${o.copies}</p><div class="heroActions"><button class="gold" data-up="${h.id}">UPGRADE 🪙100</button><button data-team="${h.id}" class="${onTeam?"selectedTeam":""}">${onTeam?"✓ TEAM":"ADD TO TEAM"}</button></div>`:"<b>🔒 NOT YET SUMMONED</b>"}</div>`}).join("")}</div></div>`;
+ ${o?`<p>Lv. ${o.level} • Copies ${o.copies}</p><div class="heroActions"><button class="gold" data-up="${h.id}">UPGRADE 🪙100</button><button data-team="${h.id}" class="${onTeam?"selectedTeam":""}">${onTeam?"✓ ACTIVE":"SELECT FOR TEAM"}</button></div>`:"<b>🔒 NOT YET SUMMONED</b>"}</div>`}).join("")}</div></div>`;
  document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>heroes(b.dataset.filter));
  document.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>upgrade(b.dataset.up));
- document.querySelectorAll("[data-team]").forEach(b=>b.onclick=()=>toggleTeam(b.dataset.team));
+ document.querySelectorAll("[data-team]").forEach(b=>b.onclick=()=>selectTeamHero(b.dataset.team));
+ document.querySelectorAll("[data-remove-slot]").forEach(b=>b.onclick=()=>removeTeamSlot(+b.dataset.removeSlot));
 }
-function toggleTeam(id){
- if(state.team.includes(id)){if(state.team.length<=1)return alert("Keep at least one hero on your team.");state.team=state.team.filter(x=>x!==id)}
- else {if(state.team.length>=4)return alert("Your active team can contain 4 heroes.");state.team.push(id)}
- save();heroes();
+function removeTeamSlot(slot){
+ if(state.team.length<=1)return alert("Keep at least one hero on your active team.");
+ state.team.splice(slot,1);save();heroes();
+}
+function selectTeamHero(id){
+ if(!state.owned[id])return;
+ if(state.team.includes(id))return alert("That hero is already on your active team.");
+ if(state.team.length>=4)return alert("Your team is full. Remove a hero from one of the four slots first.");
+ state.team.push(id);save();heroes();
 }
 function upgrade(id){if(state.coins<100)return alert("Need 100 Coins.");state.coins-=100;state.owned[id].level++;save();heroes()}
 function summon(){
