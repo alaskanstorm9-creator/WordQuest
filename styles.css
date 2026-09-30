@@ -141,3 +141,20 @@ body{background:radial-gradient(circle at 50% 0,#244f55,#07151d 70%);margin:0}.g
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}
 }
+
+/* Impact feedback: damage bursts, word tiers, passive activation */
+@keyframes floatDamage{0%{opacity:0;transform:translate(-50%,10px) scale(.55)}20%{opacity:1;transform:translate(-50%,-8px) scale(1.2)}72%{opacity:1;transform:translate(-50%,-25px) scale(1)}100%{opacity:0;transform:translate(-50%,-45px) scale(.92)}}
+@keyframes legendaryDamage{0%{opacity:0;transform:translate(-50%,8px) scale(.45) rotate(-3deg)}18%{opacity:1;transform:translate(-50%,-10px) scale(1.45) rotate(2deg)}35%{transform:translate(-50%,-13px) scale(1.12) rotate(-1deg)}75%{opacity:1;transform:translate(-50%,-30px) scale(1.16)}100%{opacity:0;transform:translate(-50%,-55px) scale(.95)}}
+@keyframes passiveFlash{0%{box-shadow:0 0 0 rgba(241,207,121,0);transform:scale(1)}35%{box-shadow:0 0 22px rgba(241,207,121,.8);transform:scale(1.06)}100%{box-shadow:0 0 0 rgba(241,207,121,0);transform:scale(1)}}
+@keyframes legendaryScreen{0%,100%{box-shadow:inset 0 0 0 rgba(241,207,121,0)}40%{box-shadow:inset 0 0 45px rgba(241,207,121,.16)}}
+
+.arena{position:relative}.floatingDamage{position:absolute;z-index:12;left:50%;top:2%;pointer-events:none;text-align:center;white-space:nowrap;animation:floatDamage 1.15s ease-out forwards;text-shadow:0 2px 3px #000,0 0 12px rgba(255,255,255,.35)}
+.floatingDamage strong{display:block;font-size:1.55rem;font-weight:1000;line-height:1}.floatingDamage small{display:block;margin-top:3px;font-size:.58rem;font-weight:900;letter-spacing:.08em}
+.damage-power strong{font-size:1.85rem}.damage-epic strong{font-size:2.2rem}.damage-epic small{font-size:.7rem}.damage-legendary{animation:legendaryDamage 1.45s ease-out forwards}.damage-legendary strong{font-size:2.75rem}.damage-legendary small{font-size:.82rem;letter-spacing:.12em}
+.passiveTriggered{animation:passiveFlash .7s ease-out}.passiveTriggered .abilityBar i{width:100%!important}.passiveCallout{display:inline-block;margin-left:7px;font-size:.68rem;font-weight:800;opacity:.9}
+.battleScene:has(.damage-legendary){animation:legendaryScreen .65s ease-out}
+
+@media(max-width:700px){
+ .floatingDamage{top:0}.floatingDamage strong{font-size:1.35rem}.damage-power strong{font-size:1.55rem}.damage-epic strong{font-size:1.8rem}.damage-legendary strong{font-size:2.15rem}.floatingDamage small{font-size:.52rem}
+ .passiveCallout{display:block;margin:3px 0 0;font-size:.58rem;white-space:normal}.damage{line-height:1.15}
+}
