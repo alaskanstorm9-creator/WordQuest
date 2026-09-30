@@ -149,6 +149,7 @@ function startTimer(){
   },1000);
 }
 function timeUp(){
+  if(fight?.worldBoss)return finishWorldBoss();
   const name=fight?.name||"Enemy"; fight=null; selected=[];
   $("#view").innerHTML=`<div class="panel"><h2 class="title">TIME'S UP!</h2><div class="boss">⌛</div><h3 class="title">${name} survived the attempt.</h3><p class="title">Try again with the same stage. Story Energy was already spent.</p><div class="row"><button class="primary" id="retry">RETURN TO STAGE</button></div></div>`;
   $("#retry").onclick=battle;
