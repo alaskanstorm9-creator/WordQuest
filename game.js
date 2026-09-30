@@ -60,6 +60,52 @@ const baseDamage=n=>n<=2?5:n===3?10:n===4?18:n===5?30:n===6?45:n===7?65:90+(n-8)
 let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,coins:500,energy:50,stage:1,owned:{pip:{copies:1,level:1},mira:{copies:1,level:1},aurelia:{copies:1,level:1}},team:["pip","mira","aurelia"],codex:[],bestiary:[],pity:0};
 if(state.energyCap==null)state.energyCap=ENERGY_CAP;
 if(state.rarePity==null)state.rarePity=0;
+const ACCOUNT_KEY="wordquest-account-v01";
+let account=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"null");
+function accountId(){return "WQ-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,7).toUpperCase()}
+function saveAccount(){localStorage.setItem(ACCOUNT_KEY,JSON.stringify(account))}
+function createGuest(){
+ account={type:"guest",playerId:accountId(),server:1,createdAt:Date.now()};
+ saveAccount();serverSelect();
+}
+function createEmail(){
+ const email=document.querySelector("#accountEmail")?.value.trim();
+ if(!email||!email.includes("@"))return alert("Enter a valid email address for this prototype.");
+ account={type:"email-alpha",email,playerId:accountId(),server:1,createdAt:Date.now()};
+ saveAccount();serverSelect();
+}
+function opening(){
+ stopTimer();
+ document.querySelector("#app").classList.add("openingMode");
+ document.querySelector("#view").innerHTML=`<div class="loginScreen">
+  <div class="loginShade"></div><section class="loginBrand"><span>AETHERA AWAITS</span><h2>WORDQUEST</h2><b>WORDS SHAPE WORLDS</b><p>Ancient World Anchors are failing. Gather the Concord and restore the Lifeword.</p></section>
+  <section class="loginPanel"><h3>ENTER AETHERA</h3><p class="loginLead">Choose how you want to begin.</p>
+   <button class="primary loginChoice" id="guestStart">PLAY AS GUEST</button>
+   <p class="accountWarning"><b>Guest progress is stored on this browser/device.</b><br>Lost or cleared local data may not be recoverable. A Player ID will be assigned.</p>
+   <div class="loginDivider"><span>OR</span></div>
+   <label class="emailLabel">EMAIL ACCOUNT <small>ALPHA PREVIEW</small></label>
+   <input id="accountEmail" class="loginInput" type="email" placeholder="adventurer@example.com">
+   <button class="gold loginChoice" id="emailStart">CONTINUE WITH EMAIL</button>
+   <p class="accountWarning">Email binding is represented in this alpha. Cloud recovery will require the future account backend.</p>
+   <button class="futureLogin" disabled>G&nbsp; CONTINUE WITH GOOGLE <span>COMING LATER</span></button>
+  </section></div>`;
+ document.querySelector("#guestStart").onclick=createGuest;
+ document.querySelector("#emailStart").onclick=createEmail;
+}
+function serverSelect(){
+ document.querySelector("#app").classList.add("openingMode");
+ const id=account?.playerId||"";
+ document.querySelector("#view").innerHTML=`<div class="serverScreen"><section class="serverCard">
+  <span class="eyebrow">SELECT SERVER</span><h2>WELCOME TO AETHERA</h2>
+  <p class="playerId">PLAYER ID <b>${id}</b></p>
+  <div class="serverRow selected"><div><strong>SERVER 1</strong><small>Launch Realm</small></div><div class="serverStatus"><b>● ONLINE</b><small>Fresh Realm</small></div></div>
+  <p class="serverNote">Future servers will open as the WordQuest population grows. New realms begin with their own 7-day Fresh Realm event.</p>
+  <button class="primary enterWorld" id="enterWorld">ENTER WORLD</button>
+  <button class="switchAccount" id="switchAccount">SWITCH ACCOUNT</button>
+ </section></div>`;
+ document.querySelector("#enterWorld").onclick=()=>{account.server=1;saveAccount();document.querySelector("#app").classList.remove("openingMode");render("home")};
+ document.querySelector("#switchAccount").onclick=()=>{localStorage.removeItem(ACCOUNT_KEY);account=null;opening()};
+}
 state.owned=state.owned||{};
 if(!state.owned.lyra)state.owned.lyra={copies:1,level:1};
 if(Array.isArray(state.team)&&state.team.length===3&&state.team.includes("pip")&&state.team.includes("mira")&&state.team.includes("aurelia"))state.team.push("lyra");
@@ -127,7 +173,7 @@ function buyEnergy(){
   save();
   alert("+50 Energy! You now have "+state.energy+" Energy.");
 }
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>render(b.dataset.view));const energyBuy=$("#energyBuy");if(energyBuy)energyBuy.onclick=buyEnergy;hud();render("home");WordQuestDictionary.load().then(n=>console.info(`WordQuest dictionary ready: ${n} words`)).catch(e=>console.warn("Dictionary background load failed",e));
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>render(b.dataset.view));const energyBuy=$("#energyBuy");if(energyBuy)energyBuy.onclick=buyEnergy;hud();if(account)serverSelect();else opening();WordQuestDictionary.load().then(n=>console.info(`WordQuest dictionary ready: ${n} words`)).catch(e=>console.warn("Dictionary background load failed",e));
 function boss(stage){
   let [name,icon,type]=BOSSES[stage-1];
   const earlyHp=[45,60,80,105,180];
