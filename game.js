@@ -59,6 +59,7 @@ const TIME_BOOST_GEM_COST=15;
 const baseDamage=n=>n<=2?5:n===3?10:n===4?18:n===5?30:n===6?45:n===7?65:90+(n-8)*20;
 let state=JSON.parse(localStorage.getItem("wordquest-v01")||"null")||{gems:1200,coins:500,energy:50,stage:1,owned:{pip:{copies:1,level:1},mira:{copies:1,level:1},aurelia:{copies:1,level:1}},team:["pip","mira","aurelia"],codex:[],bestiary:[],pity:0};
 if(state.energyCap==null)state.energyCap=ENERGY_CAP;
+if(state.rarePity==null)state.rarePity=0;
 state.owned=state.owned||{};
 if(!state.owned.lyra)state.owned.lyra={copies:1,level:1};
 if(Array.isArray(state.team)&&state.team.length===3&&state.team.includes("pip")&&state.team.includes("mira")&&state.team.includes("aurelia"))state.team.push("lyra");
@@ -260,15 +261,19 @@ function toggleTeam(id){
  save();heroes();
 }
 function upgrade(id){if(state.coins<100)return alert("Need 100 Coins.");state.coins-=100;state.owned[id].level++;save();heroes()}
-function summon(){$("#view").innerHTML=`<div class="panel"><h2 class="title">HERO SUMMON</h2><div class="boss">✨</div><p class="title">Summon heroes. Duplicate heroes increase their copy count for Ascension.</p><div class="row"><button class="gold" data-pull="1">SUMMON ×1<br>💎100</button><button class="primary" data-pull="10">SUMMON ×10<br>💎1,000</button></div><p class="notice" id="pullResult"></p><p class="title">Ultra pity counter: ${state.pity}/50</p></div>`;document.querySelectorAll("[data-pull]").forEach(b=>b.onclick=()=>pull(+b.dataset.pull))}
+function summon(){$("#view").innerHTML=`<div class="panel"><h2 class="title">HERO SUMMON</h2><div class="boss">✨</div><p class="title">Summon heroes. Duplicate heroes increase their copy count for Ascension.</p><div class="row"><button class="gold" data-pull="1">SUMMON ×1<br>💎100</button><button class="primary" data-pull="10">SUMMON ×10<br>💎1,000</button></div><p class="notice" id="pullResult"></p><p class="title">Rare+ guarantee: ${state.rarePity}/10 • Ultra pity: ${state.pity}/50</p></div>`;document.querySelectorAll("[data-pull]").forEach(b=>b.onclick=()=>pull(+b.dataset.pull))}
 function pull(n){
  let cost=n*100;if(state.gems<cost)return alert("Not enough Gems.");
  state.gems-=cost;let out=[];
  const pool=r=>HEROES.filter(h=>h.rarity===r);
  for(let i=0;i<n;i++){
-  state.pity++;let r=Math.random(),rarity;
+  state.pity++;state.rarePity++;let r=Math.random(),rarity;
   if(state.pity>=50||r<.05){rarity="Ultra";state.pity=0}
   else if(r<.25)rarity="Rare";else if(r<.65)rarity="Uncommon";else rarity="Common";
+  if(state.rarePity>=10){
+    if(rarity==="Common"||rarity==="Uncommon")rarity="Rare";
+    state.rarePity=0;
+  }
   let p=pool(rarity),h=p[Math.floor(Math.random()*p.length)];
   state.owned[h.id]??={copies:0,level:1};state.owned[h.id].copies++;out.push(h.icon+" "+h.name);
  }
