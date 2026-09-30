@@ -85,3 +85,13 @@ body{background:radial-gradient(circle at 50% 0,#244f55,#07151d 70%);margin:0}.g
 .teamSlot .heroPortrait{width:54px;min-width:54px;height:54px}.teamSlot div:not(.heroPortrait){display:flex;flex-direction:column;gap:2px;min-width:0}.teamSlot b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.teamSlot span,.teamSlot small{font-size:.72rem;opacity:.75}
 .teamSlot button{margin-left:auto;font-size:.67rem;padding:6px}.teamSlot.empty{border-style:dashed;opacity:.7}.emptyPortrait{width:50px;height:50px;border-radius:50%;display:grid!important;place-items:center;font-size:1.7rem;border:1px dashed rgba(255,255,255,.35)}
 @media(max-width:800px){.teamSlots{grid-template-columns:1fr 1fr}}@media(max-width:500px){.teamSlots{grid-template-columns:1fr}}
+
+/* Hero detail / five-star ascension sheets */
+.card[data-hero-sheet]{cursor:pointer}.card[data-hero-sheet]:hover{transform:translateY(-2px)}
+.heroSheet{max-width:980px;margin:auto}.sheetBack{margin-bottom:14px}.sheetHeroHead{display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:center;padding:18px;border-bottom:1px solid rgba(255,255,255,.14)}
+.sheetHeroHead .heroPortrait{width:140px;height:140px}.sheetHeroHead h2{margin:4px 0;font-size:2rem}.sheetStars{font-size:1.4rem;color:#f1cf79;letter-spacing:3px}
+.sheetPassive{padding:16px;margin:15px 0;background:rgba(0,0,0,.2);border:1px solid rgba(213,174,91,.35);border-radius:10px}.sheetPassive h3{margin-top:0}
+.starRoadmap{display:grid;gap:8px}.starPreview{display:grid;grid-template-columns:115px 1fr;gap:14px;padding:13px;border:1px solid rgba(255,255,255,.13);border-radius:9px;background:rgba(0,0,0,.18);opacity:.72}
+.starPreview.unlockedStar{opacity:1}.starPreview.currentStar{border-color:#f1cf79;box-shadow:0 0 16px rgba(241,207,121,.14)}.starLabel{display:flex;flex-direction:column}.starLabel b{font-size:1.25rem}.starLabel small{opacity:.7}
+.starPreview>div:last-child{display:flex;flex-direction:column;gap:4px}.starPreview span{font-size:.88rem}.starPreview em{font-size:.78rem;color:#f1cf79}
+@media(max-width:600px){.sheetHeroHead{grid-template-columns:1fr;text-align:center}.sheetHeroHead .heroPortrait{margin:auto}.starPreview{grid-template-columns:1fr}}
