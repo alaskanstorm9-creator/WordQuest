@@ -190,3 +190,16 @@ body{background:radial-gradient(circle at 50% 0,#244f55,#07151d 70%);margin:0}.g
  .damage{min-height:18px;font-size:.72rem}.refreshRow{margin:3px 0}.refreshRow button{min-height:36px!important}
  .notice{margin:3px 0;font-size:.65rem}.boostRail{padding:3px;gap:3px}.boostRail button{min-height:34px}
 }
+
+/* Home HUD cleanup: keep utility controls out of chapter artwork */
+.homeScreen{padding-top:58px}
+.homePlayerTools{top:8px;right:10px}
+.alphaPlug{border-radius:8px!important;min-width:54px!important;min-height:36px!important;padding:0 9px!important;font:900 .58rem Georgia,serif!important;letter-spacing:.08em;color:#f1cf79!important;border-color:rgba(241,207,121,.5)!important}
+@media(max-width:700px){
+ .homeScreen{padding-top:52px}
+ .alphaBuildBadge{top:9px;left:10px}
+ .homePlayerTools{top:5px;right:8px}
+ .alphaPlug{min-height:38px!important;min-width:52px!important}
+ .profilePlug,.settingsPlug{min-width:40px;min-height:40px}
+ .profilePlug .heroPortrait{width:34px;height:34px}
+}
