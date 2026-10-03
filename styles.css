@@ -267,3 +267,25 @@ body{background:radial-gradient(circle at 50% 0,#244f55,#07151d 70%);margin:0}.g
  .damage{min-height:16px!important;font-size:.64rem!important}.refreshRow{margin:2px 0!important}.refreshRow button{min-height:32px!important;padding:3px 8px!important}
  .notice{margin:2px 0!important;font-size:.58rem!important}
 }
+
+/* 4x5 combat surface: 4x4 letters + one hero ability column */
+.combatGrid{display:grid;grid-template-columns:minmax(0,4fr) minmax(70px,1fr);gap:6px;align-items:stretch}
+.combatGrid .letters{width:100%!important;box-sizing:border-box}
+.heroAbilityRail{display:grid;grid-template-rows:repeat(4,1fr);gap:6px}
+.heroAbilityRail .combatHero{min-width:0!important;padding:3px!important;display:flex!important;flex-direction:column;justify-content:center;align-items:center;gap:1px;text-align:center;border:2px solid #8b6a31;background:#101a1be8;color:#f5d88a}
+.heroAbilityRail .combatHero:disabled{opacity:.72;cursor:default}
+.heroAbilityRail .heroIcon{font-size:clamp(22px,4vw,34px);line-height:1}
+.heroAbilityRail .combatHero b{font-size:.62rem}.heroAbilityRail .combatHero small{font-size:.52rem}
+.heroAbilityRail .abilityBar{width:90%;height:5px;margin:2px 0 0}
+.heroAbilityRail .abilityReady{box-shadow:0 0 12px #f2c94c;border-color:#f2c94c;animation:abilityReadyPulse 1.15s ease-in-out infinite}
+.heroAbilityRail .abilityArmed{box-shadow:0 0 16px #ff5b35;border-color:#ff6b3f;background:#321714e8}
+@keyframes abilityReadyPulse{50%{filter:brightness(1.35)}}
+@media(max-width:700px){
+ .combatGrid{grid-template-columns:minmax(0,4fr) 58px;gap:4px}
+ .heroAbilityRail{gap:4px}
+ .heroAbilityRail .combatHero{min-height:0!important;border-width:1px!important;padding:1px!important}
+ .heroAbilityRail .heroIcon{font-size:20px!important}
+ .heroAbilityRail .combatHero b{font-size:.46rem!important;max-width:54px;overflow:hidden;text-overflow:ellipsis}
+ .heroAbilityRail .combatHero small{font-size:.42rem!important}
+ .heroAbilityRail .abilityBar{height:3px}
+}
