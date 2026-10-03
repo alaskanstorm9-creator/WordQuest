@@ -203,3 +203,14 @@ body{background:radial-gradient(circle at 50% 0,#244f55,#07151d 70%);margin:0}.g
  .profilePlug,.settingsPlug{min-width:40px;min-height:40px}
  .profilePlug .heroPortrait{width:34px;height:34px}
 }
+
+/* Profile plug must override full-size hero card portrait styles */
+.homePlayerTools .profilePlug{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;overflow:visible}
+.homePlayerTools .profilePlug .heroPortrait{box-sizing:border-box!important;width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;margin:0!important;border-radius:50%!important;overflow:hidden!important}
+.homePlayerTools .profilePlug .heroPortrait span{font-size:22px!important;line-height:1!important;filter:none!important}
+.homePlayerTools .profilePlug .heroPortrait i{font-size:9px!important;right:1px!important;bottom:1px!important}
+@media(max-width:700px){
+ .homePlayerTools .profilePlug{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important}
+ .homePlayerTools .profilePlug .heroPortrait{width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important}
+ .homePlayerTools .profilePlug .heroPortrait span{font-size:19px!important}
+}
