@@ -485,13 +485,14 @@ function bindLetterInput(){
   const boardEl=$("#letterBoard"); if(!boardEl)return;
   let dragging=false,moved=false,last=-1;
   const add=i=>{if(i<0||selected.includes(i))return;selected.push(i);last=i;syncWord()};
+  let startIndex=-1;
   document.querySelectorAll(".tile").forEach(tile=>{
-    tile.onclick=e=>{if(moved){e.preventDefault();moved=false;return}pick(+tile.dataset.i)};
-    tile.onpointerdown=e=>{if(e.pointerType==="mouse")return;dragging=true;moved=false;last=-1;add(+tile.dataset.i);e.preventDefault()};
+    tile.onclick=e=>{if(e.detail===0)return;pick(+tile.dataset.i)};
+    tile.onpointerdown=e=>{if(e.pointerType==="mouse")return;dragging=true;moved=false;last=-1;startIndex=+tile.dataset.i;e.preventDefault()};
   });
-  boardEl.onpointermove=e=>{if(!dragging)return;const el=document.elementFromPoint(e.clientX,e.clientY)?.closest(".tile");if(!el||!boardEl.contains(el))return;const i=+el.dataset.i;if(i!==last){add(i);moved=true}e.preventDefault()};
-  const end=e=>{if(!dragging)return;dragging=false;if(moved)e.preventDefault();setTimeout(()=>moved=false,0)};
-  boardEl.onpointerup=end;boardEl.onpointercancel=end;boardEl.onpointerleave=e=>{if(e.pointerType!=="mouse")end(e)};
+  boardEl.onpointermove=e=>{if(!dragging)return;const el=document.elementFromPoint(e.clientX,e.clientY)?.closest(".tile");if(!el||!boardEl.contains(el))return;const i=+el.dataset.i;if(i!==last){if(last<0)add(startIndex);add(i);moved=true}e.preventDefault()};
+  const end=e=>{if(!dragging)return;dragging=false;if(!moved&&startIndex>=0)pick(startIndex);startIndex=-1;last=-1;e.preventDefault()};
+  boardEl.onpointerup=end;boardEl.onpointercancel=end;boardEl.onpointerleave=e=>{if(e.pointerType!=="mouse"&&dragging&&moved)end(e)};
 }
 function pick(i){let p=selected.indexOf(i);p>=0?selected.splice(p,1):selected.push(i);syncWord()}
 function syncWord(){let w=selected.map(i=>fight.letters[i]).join("");$("#word").textContent=w;document.querySelectorAll(".tile").forEach((x,i)=>x.classList.toggle("selected",selected.includes(i)))}
