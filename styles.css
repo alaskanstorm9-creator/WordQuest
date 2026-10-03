@@ -214,3 +214,23 @@ body{background:radial-gradient(circle at 50% 0,#244f55,#07151d 70%);margin:0}.g
  .homePlayerTools .profilePlug .heroPortrait{width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important}
  .homePlayerTools .profilePlug .heroPortrait span{font-size:19px!important}
 }
+
+/* Locked WordQuest HUD composition: avatar top-right, name below, settings at name's lower-right */
+.homeAlphaPlug{position:absolute!important;top:12px!important;left:auto!important;right:150px!important;z-index:8}
+.homePlayerTools{position:absolute!important;top:8px!important;right:10px!important;width:126px!important;height:104px!important;display:block!important}
+.homePlayerTools .profilePlug{position:absolute!important;top:0!important;right:0!important;width:54px!important;height:54px!important;min-width:54px!important;min-height:54px!important}
+.homePlayerTools .profilePlug .heroPortrait{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important}
+.homePlayerTools .profilePlug .heroPortrait span{font-size:27px!important}
+.playerNamePlug{position:absolute;top:59px;right:0;width:126px;min-height:28px;padding:4px 31px 4px 7px;border:1px solid rgba(241,207,121,.55);border-radius:7px;background:#081521;color:#f1cf79;font:900 .66rem Georgia,serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.homePlayerTools .settingsPlug{position:absolute!important;right:2px!important;top:61px!important;width:25px!important;height:25px!important;min-width:25px!important;min-height:25px!important;padding:0!important;font-size:.85rem!important;z-index:2}
+.homeScreen{padding-top:112px!important}
+@media(max-width:700px){
+ .homeAlphaPlug{top:10px!important;right:118px!important}
+ .homePlayerTools{top:6px!important;right:7px!important;width:102px!important;height:90px!important}
+ .homePlayerTools .profilePlug{width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important}
+ .homePlayerTools .profilePlug .heroPortrait{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important}
+ .homePlayerTools .profilePlug .heroPortrait span{font-size:22px!important}
+ .playerNamePlug{top:50px;width:102px;min-height:26px;padding-right:28px;font-size:.58rem}
+ .homePlayerTools .settingsPlug{top:51px!important;width:23px!important;height:23px!important;min-width:23px!important;min-height:23px!important}
+ .homeScreen{padding-top:98px!important}
+}
