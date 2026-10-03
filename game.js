@@ -592,9 +592,10 @@ function heroes(filter=heroFilter){
  <p>Remove a hero from a slot, then choose an owned hero below to fill the opening.</p><div class="teamSlots">${slots}</div></section>
  <div class="heroes">${visible.map(h=>{let o=state.owned[h.id],onTeam=state.team.includes(h.id),star=ascensionRank(o?.copies||0)||1,d=heroStarData(h,star);return `<div class="card rarity-${h.rarity.toLowerCase()} ${!o?"locked":""}" data-hero-sheet="${h.id}">${heroPortrait(h)}
  <div class="heroCardTitle"><b>${h.name}</b><span>${h.class}</span></div><div class="rarity">${h.rarity} ${"★".repeat(star)}${"☆".repeat(5-star)}</div>
- <p class="abilityText">${h.ability} <small>→ current ${d.primaryPct}% bonus</small></p><p class="heroLore">${h.lore}</p>
+ <p class="abilityText">${h.ability} <small>→ current ${d.primaryPct}% bonus</small></p><button class="heroStoryLink" data-story="${h.id}">READ STORY</button>
  ${o?`<p>Lv. ${o.level} • Copies ${o.copies}</p><div class="heroActions"><button class="gold" data-up="${h.id}">UPGRADE 🪙100</button><button data-team="${h.id}" class="${onTeam?"selectedTeam":""}">${onTeam?"✓ ACTIVE":"SELECT FOR TEAM"}</button></div>`:"<b>🔒 NOT YET SUMMONED</b>"}</div>`}).join("")}</div></div>`;
  document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>heroes(b.dataset.filter));
+ document.querySelectorAll("[data-story]").forEach(b=>b.onclick=e=>{e.stopPropagation();heroSheet(b.dataset.story)});
  document.querySelectorAll("[data-up]").forEach(b=>b.onclick=e=>{e.stopPropagation();upgrade(b.dataset.up)});
  document.querySelectorAll("[data-team]").forEach(b=>b.onclick=e=>{e.stopPropagation();selectTeamHero(b.dataset.team)});
  document.querySelectorAll("[data-remove-slot]").forEach(b=>b.onclick=()=>removeTeamSlot(+b.dataset.removeSlot));
@@ -605,7 +606,7 @@ function heroSheet(id){
  const rows=[1,2,3,4,5].map(star=>{const d=heroStarData(h,star),need=ASCENSION_THRESHOLDS[star-1];return `<div class="starPreview ${star===current?"currentStar":""} ${star<=current?"unlockedStar":""}">
  <div class="starLabel"><b>★${star}</b><small>${star<=current?"UNLOCKED":need+" total copies"}</small></div>
  <div><b>Primary: +${d.primaryPct}%</b><span>${star>=3?`Letter Talent: words containing <strong>${d.letter}</strong> gain +${d.letterPct}% damage.`:"Letter Talent unlocks at ★3."}</span>${star===5?'<em>Signature Ascension — maximum current passive strength.</em>':""}</div></div>`}).join("");
- $("#view").innerHTML=`<div class="panel heroSheet rarity-${h.rarity.toLowerCase()}"><button class="sheetBack" id="sheetBack">← HEROES</button><div class="sheetHeroHead">${heroPortrait(h)}<div><span class="eyebrow">${h.rarity} ${h.class}</span><h2>${h.name}</h2><div class="sheetStars">${"★".repeat(current)}${"☆".repeat(5-current)}</div><p>${h.lore}</p></div></div>
+ $("#view").innerHTML=`<div class="panel heroSheet rarity-${h.rarity.toLowerCase()}"><button class="sheetBack" id="sheetBack">← HEROES</button><div class="sheetHeroHead">${heroPortrait(h)}<div><span class="eyebrow">${h.rarity} ${h.class}</span><h2>${h.name}</h2><div class="sheetStars">${"★".repeat(current)}${"☆".repeat(5-current)}</div><p class="heroBiography">${h.lore}</p><div class="heroStoryMeta"><span>${h.theme||"Aethera"}</span><span>${h.class} of the Concord</span></div></div></div>
  <section class="sheetPassive"><h3>PASSIVE EVOLUTION</h3><p><b>Base:</b> ${h.ability}</p><p>Duplicates strengthen the main passive and unlock a rarity-based letter talent at ★3.</p></section>
  <section class="starRoadmap">${rows}</section>
  ${o?`<div class="row"><button class="gold" id="sheetUpgrade">UPGRADE HERO 🪙100</button><button class="${onTeam?"selectedTeam":"primary"}" id="sheetTeam">${onTeam?"✓ ACTIVE TEAM":"SELECT FOR TEAM"}</button></div>`:'<p class="notice">Summon this hero to unlock progression.</p>'}</div>`;
