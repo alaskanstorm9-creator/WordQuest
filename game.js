@@ -575,7 +575,10 @@ function tutorial(){
  $("#tutorialBattle").onclick=tutorialIntro;$("#tutorialHome").onclick=home;
 }
 let heroFilter="All";
-function heroPortrait(h){return `<div class="heroPortrait ${h.class.toLowerCase()}"><span>${h.icon}</span><i>${h.class==="Mage"?"✦":h.class==="Rogue"?"✣":h.class==="Warrior"?"⚔":"☀"}</i></div>`}
+function heroPortrait(h){
+ const mark=h.class==="Mage"?"✦":h.class==="Rogue"?"✣":h.class==="Warrior"?"⚔":"☀";
+ return `<div class="heroPortrait ${h.class.toLowerCase()} rarity-${h.rarity.toLowerCase()}"><img src="assets/heroes/${h.id}.webp" alt="${h.name}" loading="lazy" onerror="this.remove();this.parentElement.classList.add('artFallback')"><span>${h.icon}</span><i>${mark}</i></div>`
+}
 function heroes(filter=heroFilter){
  heroFilter=filter;
  const visible=filter==="All"?HEROES:HEROES.filter(h=>h.class===filter);
