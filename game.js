@@ -470,7 +470,7 @@ function drawFight(){
       <div class="enemyName">${fight.name}</div>
       <div class="combatTimer">${fight.tutorial?"∞ NO TIME LIMIT":`⏱ <span id="timer">${formatTime(fight.timeLeft)}</span>`}</div>
     </div>
-    <div class="arena">
+    <div class="arena" style="--boss-icon:\'${fight.icon}\'">
       <div class="bossArt${hitClass} ${fight.worldBoss?"calamityBoss":""}"><span>${fight.icon}</span><i></i>${strikeWord&&state.damageDisplay!=="clean"?`<div class="floatingDamage damage-${strikeTier}"><strong>-${strikeDamage.toLocaleString()}</strong><small>${strikeTier==="legendary"?"LEGENDARY WORD!":strikeTier==="epic"?"MIGHTY WORD!":strikeTier==="power"?"POWER WORD":""}</small></div>`:""}</div>
       <div class="bossIntel"><b>${fight.tutorial?"Training Encounter":"Boss Intel"}</b><br>${fight.tutorial?"Practice building words and watch how each starter hero contributes. There is no time pressure.":fight.worldBoss?worldBossIntel():traitText(fight.type,fight.cursedInitials||[],fight.lengthResistance||{})} ${fight.disabled?`<strong>Disabled: ${fight.disabled}</strong>`:""}</div>
     </div>
