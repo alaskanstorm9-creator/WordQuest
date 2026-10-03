@@ -465,21 +465,33 @@ function drawFight(){
       <div class="boardArea">
         <div class="streak">🔥 Letter Streak: ${fight.streakCount>1?`${fight.streakLetter} ×${fight.streakCount} • +${(fight.streakCount-1)*10}% damage`:"Start consecutive words with the same letter"}</div>
         <div class="word" id="word"></div>
-        <div class="row refreshRow"><button class="gold" id="refresh">🔄 NEW LETTERS — ${fight.refreshes<(1+(fight.clericExtraRerolls||0))?"FREE":"💎"+REFRESH_GEM_COST}</button></div>
-        <div class="letters">${fight.letters.map((l,i)=>`<button class="tile ${fight.rogueBonusTiles?.has(i)?"bonusTile":""}" data-i="${i}" ${l===fight.disabled?"disabled":""}><span>${l}</span>${fight.rogueBonusTiles?.has(i)?`<small>×2</small>`:""}</button>`).join("")}</div>
+        <div class="row actionRow combatPrimaryActions"><button class="gold" id="clear">CLEAR</button><button class="primary strikeBtn" id="submit">⚔ STRIKE</button></div>
+        <div class="letters" id="letterBoard">${fight.letters.map((l,i)=>`<button class="tile ${fight.rogueBonusTiles?.has(i)?"bonusTile":""}" data-i="${i}" ${l===fight.disabled?"disabled":""}><span>${l}</span>${fight.rogueBonusTiles?.has(i)?`<small>×2</small>`:""}</button>`).join("")}</div>
         <div class="damage ${strikeWord?"damagePop":""}" id="damage">${strikeWord?`⚔ ${strikeWord} — ${strikeDamage.toLocaleString()} DAMAGE!${state.damageDisplay!=="clean"&&strikeHeroes.length?` <span class="passiveCallout">✦ ${strikeHeroes.map(x=>x.icon+" "+x.name).join(" • ")} PASSIVE</span>`:""}`:""}</div>
-        <div class="row actionRow"><button class="gold" id="clear">CLEAR</button><button class="primary strikeBtn" id="submit">⚔ STRIKE</button></div>
-        <p class="notice" id="notice">Click letters in order to build your word.</p>
+        <div class="row refreshRow"><button class="gold" id="refresh">🔄 NEW LETTERS — ${fight.refreshes<(1+(fight.clericExtraRerolls||0))?"FREE":"💎"+REFRESH_GEM_COST}</button></div>
+        <p class="notice" id="notice">Tap letters or drag your finger across them to build your word.</p>
       </div>
       <div class="boostRail">
         ${fight.tutorial?`<b>TUTORIAL</b><small>Take as long as you need.</small><div class="tutorialTip">Try different word lengths and repeat a starting letter to build a Letter Streak.</div>`:fight.worldBoss?`<b>${fight.mechanic}</b><small>${fight.intel}</small><div class="tutorialTip">Personal Best: ${(state.worldBossScores[fight.id]||0).toLocaleString()}</div>`:`<b>+30 SECONDS</b><small>One time per battle</small>${!fight.timeBoostUsed?`<button onclick="addTimeBoost('ad')">▶ WATCH AD</button><span>OR</span><button onclick="addTimeBoost('gems')">💎 15 GEMS</button>`:`<div class="boostUsed">TIME BOOST USED</div>`}`}
       </div>
     </div>
   </div>`;
-  document.querySelectorAll(".tile").forEach(x=>x.onclick=()=>pick(+x.dataset.i));
+  bindLetterInput();
   $("#clear").onclick=()=>{selected=[];syncWord()};
   $("#refresh").onclick=refreshLetters;
   $("#submit").onclick=strike;
+}
+function bindLetterInput(){
+  const boardEl=$("#letterBoard"); if(!boardEl)return;
+  let dragging=false,moved=false,last=-1;
+  const add=i=>{if(i<0||selected.includes(i))return;selected.push(i);last=i;syncWord()};
+  document.querySelectorAll(".tile").forEach(tile=>{
+    tile.onclick=e=>{if(moved){e.preventDefault();moved=false;return}pick(+tile.dataset.i)};
+    tile.onpointerdown=e=>{if(e.pointerType==="mouse")return;dragging=true;moved=false;last=-1;add(+tile.dataset.i);e.preventDefault()};
+  });
+  boardEl.onpointermove=e=>{if(!dragging)return;const el=document.elementFromPoint(e.clientX,e.clientY)?.closest(".tile");if(!el||!boardEl.contains(el))return;const i=+el.dataset.i;if(i!==last){add(i);moved=true}e.preventDefault()};
+  const end=e=>{if(!dragging)return;dragging=false;if(moved)e.preventDefault();setTimeout(()=>moved=false,0)};
+  boardEl.onpointerup=end;boardEl.onpointercancel=end;boardEl.onpointerleave=e=>{if(e.pointerType!=="mouse")end(e)};
 }
 function pick(i){let p=selected.indexOf(i);p>=0?selected.splice(p,1):selected.push(i);syncWord()}
 function syncWord(){let w=selected.map(i=>fight.letters[i]).join("");$("#word").textContent=w;document.querySelectorAll(".tile").forEach((x,i)=>x.classList.toggle("selected",selected.includes(i)))}
