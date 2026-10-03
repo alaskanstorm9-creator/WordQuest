@@ -379,7 +379,7 @@ function avatarPicker(){
 function home(){
  let b=boss(state.stage);
  const ph=profileHero();
- $("#view").innerHTML=`<div class="homeScreen"><div class="alphaBuildBadge">ALPHA ${ALPHA_BUILD}</div><div class="homePlayerTools"><button class="alphaPlug" id="alphaPlug" aria-label="Alpha test tools">🧪</button><button class="profilePlug" id="profilePlug" aria-label="Choose profile avatar">${heroPortrait(ph)}<span>Lv ${state.accountLevel}</span></button><button class="settingsPlug" id="settingsPlug" aria-label="Settings">⚙</button></div>
+ $("#view").innerHTML=`<div class="homeScreen"><div class="alphaBuildBadge">ALPHA ${ALPHA_BUILD}</div><div class="homePlayerTools"><button class="alphaPlug" id="alphaPlug" aria-label="Alpha test tools">ALPHA</button><button class="profilePlug" id="profilePlug" aria-label="Choose profile avatar">${heroPortrait(ph)}<span>Lv ${state.accountLevel}</span></button><button class="settingsPlug" id="settingsPlug" aria-label="Settings">⚙</button></div>
   <section class="homeHero">
    <div class="homeCopy"><span class="eyebrow">A WORLD OF LIVING LANGUAGE</span><h2>CHAPTER 1<br><strong>GREENVALE</strong></h2>
    <p>A peaceful valley surrounds the Rootstone World Anchor. Ancient prisons have opened, creatures roam the land, and the Lifeword is beginning to wither.</p>
