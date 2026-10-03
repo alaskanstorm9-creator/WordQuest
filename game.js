@@ -69,6 +69,7 @@ if(state.accountXpSources==null)state.accountXpSources={story:0,worldBoss:0,pvp:
 if(state.worldBossScores==null)state.worldBossScores={};
 if(state.damageDisplay==null)state.damageDisplay="full";
 if(state.profileHero==null||!state.owned[state.profileHero])state.profileHero=state.owned.pip?"pip":Object.keys(state.owned)[0];
+if(state.playerName==null)state.playerName="Adventurer";
 if(!state.owned.lyra)state.owned.lyra={copies:1,level:1};
 const ACCOUNT_KEY="wordquest-account-v01";
 let account=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"null");
@@ -379,7 +380,7 @@ function avatarPicker(){
 function home(){
  let b=boss(state.stage);
  const ph=profileHero();
- $("#view").innerHTML=`<div class="homeScreen"><div class="alphaBuildBadge">ALPHA ${ALPHA_BUILD}</div><div class="homePlayerTools"><button class="alphaPlug" id="alphaPlug" aria-label="Alpha test tools">ALPHA</button><button class="profilePlug" id="profilePlug" aria-label="Choose profile avatar">${heroPortrait(ph)}<span>Lv ${state.accountLevel}</span></button><button class="settingsPlug" id="settingsPlug" aria-label="Settings">⚙</button></div>
+ $("#view").innerHTML=`<div class="homeScreen"><div class="alphaBuildBadge">ALPHA ${ALPHA_BUILD}</div><button class="alphaPlug homeAlphaPlug" id="alphaPlug" aria-label="Alpha test tools">ALPHA</button><div class="homePlayerTools"><button class="profilePlug" id="profilePlug" aria-label="Choose profile avatar">${heroPortrait(ph)}<span>Lv ${state.accountLevel}</span></button><button class="playerNamePlug" id="playerNamePlug" aria-label="Change player name">${state.playerName}</button><button class="settingsPlug" id="settingsPlug" aria-label="Settings">⚙</button></div>
   <section class="homeHero">
    <div class="homeCopy"><span class="eyebrow">A WORLD OF LIVING LANGUAGE</span><h2>CHAPTER 1<br><strong>GREENVALE</strong></h2>
    <p>A peaceful valley surrounds the Rootstone World Anchor. Ancient prisons have opened, creatures roam the land, and the Lifeword is beginning to wither.</p>
@@ -395,7 +396,7 @@ function home(){
    <button class="gold" id="giftCodes">🎁 GIFT CODE</button>
   </section>
  </div>`;
- $("#alphaPlug").onclick=alphaTools;$("#profilePlug").onclick=avatarPicker;$("#settingsPlug").onclick=settings;$("#homePlay").onclick=()=>render("battle");$("#homeWorldBoss").onclick=worldBoss;$("#homeHeroes").onclick=()=>render("heroes");const gc=$("#giftCodes");if(gc)gc.onclick=giftCode;
+ $("#alphaPlug").onclick=alphaTools;$("#profilePlug").onclick=avatarPicker;$("#playerNamePlug").onclick=()=>{const n=prompt("Choose your player name:",state.playerName);if(n&&n.trim()){state.playerName=n.trim().slice(0,18);save();home()}};$("#settingsPlug").onclick=settings;$("#homePlay").onclick=()=>render("battle");$("#homeWorldBoss").onclick=worldBoss;$("#homeHeroes").onclick=()=>render("heroes");const gc=$("#giftCodes");if(gc)gc.onclick=giftCode;
 }
 const GIFT_CODES={
  "WQDEVGEMS":{gems:10000,label:"Developer Summon Cache"},
