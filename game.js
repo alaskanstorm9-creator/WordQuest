@@ -335,6 +335,31 @@ function finishWorldBoss(){
  $("#wbAgain").onclick=()=>startWorldBoss(b.id);$("#wbHub").onclick=worldBoss;fight=null;
 }
 function render(v){if(v==="home")home();if(v==="battle")battle();if(v==="heroes")heroes();if(v==="summon")summon();if(v==="codex")codex();if(v==="store")store();if(v==="tutorial")tutorial();if(v==="worldboss")worldBoss()}
+const ALPHA_BUILD="0.3.0-alpha.1";
+function alphaDiagnostics(){
+ const ph=profileHero();
+ return [
+  "WordQuest "+ALPHA_BUILD,
+  "Account Level: "+(state.accountLevel||1),
+  "Story Stage: "+state.stage+"/15",
+  "Team: "+state.team.map(id=>HEROES.find(h=>h.id===id)?.name||id).join(", "),
+  "Profile: "+(ph?.name||"None"),
+  "Damage View: "+state.damageDisplay,
+  "Owned Heroes: "+Object.keys(state.owned).length+"/40",
+  "Dictionary: "+(window.WordQuestDictionary?"loaded":"unavailable"),
+  "Browser: "+navigator.userAgent
+ ].join("\n");
+}
+function alphaTools(){
+ stopTimer();
+ $("#view").innerHTML=`<div class="panel alphaPanel"><span class="eyebrow">WORDQUEST ${ALPHA_BUILD}</span><h2>🧪 ALPHA TEST TOOLS</h2><p>This build is for gameplay testing. Your save is stored on this browser/device.</p>
+ <section class="alphaAction"><div><b>🐞 SEND FEEDBACK</b><p>Copy a diagnostic report, then send it with what happened, what you expected, and the steps that caused it.</p></div><button class="primary" id="copyDiagnostics">COPY REPORT</button></section>
+ <textarea id="diagnostics" readonly>${alphaDiagnostics()}</textarea><p class="notice" id="alphaNotice">Tip: screenshots are especially useful for layout or animation bugs.</p>
+ <section class="alphaAction dangerZone"><div><b>RESET TEST SAVE</b><p>Erases local WordQuest progression on this browser. This cannot be undone.</p></div><button class="dangerButton" id="resetAlpha">RESET SAVE</button></section>
+ <div class="row"><button class="gold" id="alphaBack">BACK HOME</button></div></div>`;
+ $("#alphaBack").onclick=home;$("#copyDiagnostics").onclick=async()=>{const t=$("#diagnostics").value;try{await navigator.clipboard.writeText(t);$("#alphaNotice").textContent="✓ Diagnostic report copied."}catch(e){$("#diagnostics").focus();$("#diagnostics").select();$("#alphaNotice").textContent="Copy the selected report manually."}};
+ $("#resetAlpha").onclick=()=>{if(confirm("RESET WORDQUEST TEST SAVE?\n\nAll local progression, heroes, scores, settings and redeemed codes on this browser will be erased.")){localStorage.removeItem("wordquest-v01");location.reload()}};
+}
 function profileHero(){return HEROES.find(h=>h.id===state.profileHero)||HEROES.find(h=>state.owned[h.id])}
 function settings(){
  stopTimer();
@@ -354,7 +379,7 @@ function avatarPicker(){
 function home(){
  let b=boss(state.stage);
  const ph=profileHero();
- $("#view").innerHTML=`<div class="homeScreen"><div class="homePlayerTools"><button class="profilePlug" id="profilePlug" aria-label="Choose profile avatar">${heroPortrait(ph)}<span>Lv ${state.accountLevel}</span></button><button class="settingsPlug" id="settingsPlug" aria-label="Settings">⚙</button></div>
+ $("#view").innerHTML=`<div class="homeScreen"><div class="alphaBuildBadge">ALPHA ${ALPHA_BUILD}</div><div class="homePlayerTools"><button class="alphaPlug" id="alphaPlug" aria-label="Alpha test tools">🧪</button><button class="profilePlug" id="profilePlug" aria-label="Choose profile avatar">${heroPortrait(ph)}<span>Lv ${state.accountLevel}</span></button><button class="settingsPlug" id="settingsPlug" aria-label="Settings">⚙</button></div>
   <section class="homeHero">
    <div class="homeCopy"><span class="eyebrow">A WORLD OF LIVING LANGUAGE</span><h2>CHAPTER 1<br><strong>GREENVALE</strong></h2>
    <p>A peaceful valley surrounds the Rootstone World Anchor. Ancient prisons have opened, creatures roam the land, and the Lifeword is beginning to wither.</p>
@@ -370,7 +395,7 @@ function home(){
    <button class="gold" id="giftCodes">🎁 GIFT CODE</button>
   </section>
  </div>`;
- $("#profilePlug").onclick=avatarPicker;$("#settingsPlug").onclick=settings;$("#homePlay").onclick=()=>render("battle");$("#homeWorldBoss").onclick=worldBoss;$("#homeHeroes").onclick=()=>render("heroes");const gc=$("#giftCodes");if(gc)gc.onclick=giftCode;
+ $("#alphaPlug").onclick=alphaTools;$("#profilePlug").onclick=avatarPicker;$("#settingsPlug").onclick=settings;$("#homePlay").onclick=()=>render("battle");$("#homeWorldBoss").onclick=worldBoss;$("#homeHeroes").onclick=()=>render("heroes");const gc=$("#giftCodes");if(gc)gc.onclick=giftCode;
 }
 const GIFT_CODES={
  "WQDEVGEMS":{gems:10000,label:"Developer Summon Cache"},
