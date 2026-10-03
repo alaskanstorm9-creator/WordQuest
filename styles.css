@@ -322,3 +322,14 @@ body{background:radial-gradient(circle at 50% 0,#244f55,#07151d 70%);margin:0}.g
  .heroes .heroCardTitle b{font-size:.82rem}.heroes .heroCardTitle span,.heroes .rarity{font-size:.58rem}.heroes .abilityText{font-size:.67rem;margin:3px 0}.heroes .card>p{font-size:.62rem;margin:2px 0}
  .heroes .heroActions{grid-template-columns:1fr 1fr;gap:3px}.heroes .heroActions button{font-size:.52rem;padding:5px 2px}
 }
+
+/* Production hero portrait pipeline. Real art overlays the legacy emoji fallback. */
+.heroPortrait{position:relative;overflow:hidden;background:#07161d}
+.heroPortrait>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 24%;z-index:2}
+.heroPortrait>span{position:relative;z-index:1}
+.heroPortrait>i{z-index:3}
+.heroPortrait.rarity-common{box-shadow:inset 0 0 0 1px #aaa}
+.heroPortrait.rarity-uncommon{box-shadow:inset 0 0 0 2px #23b85a}
+.heroPortrait.rarity-rare{box-shadow:inset 0 0 0 2px #248cff}
+.heroPortrait.rarity-ultra{box-shadow:inset 0 0 0 2px #c743ff,0 0 10px #9b2dff88}
+.heroPortrait.rarity-ultra>img{filter:saturate(1.12) contrast(1.04)}
