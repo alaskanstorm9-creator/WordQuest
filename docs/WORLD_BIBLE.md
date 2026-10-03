@@ -196,3 +196,62 @@ World Anchors:
 
 Hollow Scribe:
 - should initially be represented through symbols, silhouettes, abandoned ritual sites and corrupted handwriting rather than frequent direct appearances.
+
+
+## The Five Banners — Hero Factions
+
+The forty playable heroes are not a collection of strangers who conveniently agree. Before the Anchor Crisis, many stood on opposite sides of old wars, religious disputes, border feuds and arguments over how the Lifeword should be used. The **Concord of Words** is an emergency alliance: each banner retains its identity, grudges and ambitions while accepting that the Hollow Scribe threatens them all.
+
+### The Greenvale Freebound
+Scouts, villagers, craftspeople and wandering protectors from the lands surrounding the Rootstone. The Freebound distrust distant rulers and divine institutions because Greenvale was left to face its first fracture largely alone. Pip becomes one of their unlikely symbols: a thief and courier who repeatedly gets vital information where armies cannot.
+
+**Story tension:** independence versus the need for a united command.
+
+### The Rune Covenant
+Scholars, seers, mages and keepers of forbidden records who study the common language beneath the northern runes and southern divine scripts. Mira is central to the Covenant's story. Some Covenant members once hid dangerous discoveries from the other factions, believing knowledge was safer in a few careful hands.
+
+**Story tension:** whether dangerous knowledge should be protected, shared or destroyed.
+
+### The Sun Court
+Warriors, clerics and temple champions from the southern kingdoms. Aurelia is one of its most visible champions, while Lyra's history ties her closely to its sacred traditions. The Court once treated several northern practices as dangerous heresy and fought bitterly with rune-users over relic sites.
+
+**Story tension:** duty and tradition versus evidence that the old institutions misunderstood the Anchors.
+
+### The Stormbound Clans
+Northern jarls, rune-warriors, seers and oathkeepers raised around the surviving traditions of the old world. Their ancestors fought the southern kingdoms for control of ruins both sides believed belonged to them. They know more about the ancient prisons than they initially admit.
+
+**Story tension:** ancestral oaths versus cooperation with former enemies.
+
+### The Veiled Road
+Spies, smugglers, exiles, shapeshifters and people who belong fully to no kingdom. They moved between enemy territories long before the Concord existed and therefore know secrets every other faction would rather keep buried. Their loyalty is frequently questioned, sometimes fairly.
+
+**Story tension:** trust, hidden identities and whether morally questionable methods are justified against an existential threat.
+
+## Why the Concord Exists
+
+Greenvale changes the political reality of Aethera. The corruption beneath the Rootstone contains markings corresponding to Anchor sites claimed by every major power. No faction can protect its own territory without information, fighters and Lifeword knowledge held by its former enemies.
+
+The first Concord gathering is therefore tense rather than triumphant. Warriors who once met across battle lines now share a camp. Clerics work beside mages they previously condemned. Rogues carry intelligence between rulers who would once have imprisoned them.
+
+The player does not erase these differences by recruiting heroes. The player builds a functioning alliance out of them.
+
+This gives future Story chapters room for hero rivalries, reconciliations, faction missions and revelations that change how old conflicts are understood. Individual heroes can disagree strongly while still recognizing the Hollow Scribe and the failing Anchor network as the greater threat.
+
+## Ultra Heroes — Living Legends
+
+The four Ultra heroes are deliberately larger-than-life figures within the setting, one representing each combat discipline.
+
+- **Cinder Hecaflame — Mage:** bearer of three witchfires and Mira's vanished mentor. Her return proves the crisis reaches beyond ordinary geography into the crossroads between realms.
+- **Lokir Manyfaces — Rogue:** a legendary masked shapeshifter whose true identity remains disputed even among the gods. Every faction has a reason to distrust him and a reason to need him.
+- **Sigrun Stormwing — Warrior:** commander of a lost valkyrie host. Her arrival transforms the Concord from a desperate coalition into a force capable of confronting ancient calamities.
+- **Eirene Worldmender — Cleric:** healer of people, runes and eventually damaged Anchors. Her belief that Aethera itself can be healed challenges factions that see destruction or containment as the only answers.
+
+Ultra portrait art should communicate this narrative status immediately: stronger silhouette, more elaborate costume, environmental or magical effects, richer lighting and a sense that the character has entered the scene with power already in motion. They should still use the same portrait language as the rest of the roster so they feel rare rather than belonging to a different game.
+
+## Roster Art Canon
+
+The playable roster remains **40 heroes: 10 Rogues, 10 Mages, 10 Warriors and 10 Clerics**. Rarity distribution is **12 Common, 14 Uncommon, 10 Rare and 4 Ultra**.
+
+Production portraits use the locked painterly WordQuest fantasy style. Common heroes are grounded and readable; Uncommon heroes gain stronger identity and modest effects; Rare heroes receive more dramatic lighting, costume detail and magical atmosphere; Ultra heroes receive the strongest visual effects and legendary presentation.
+
+The four launch starters remain **Pip Shadowstep, Mira Moonscribe, Aurelia Sunblade and Lyra Dawnkeeper**. Concept roster sheets are visual references only; names or appearances generated on those sheets do not replace the canonical roster unless deliberately adopted into the game data.
