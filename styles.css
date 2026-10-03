@@ -289,3 +289,36 @@ body{background:radial-gradient(circle at 50% 0,#244f55,#07151d 70%);margin:0}.g
  .heroAbilityRail .combatHero small{font-size:.42rem!important}
  .heroAbilityRail .abilityBar{height:3px}
 }
+
+/* Screenshot polish: keep the enemy visible behind the playable 4x5 combat surface */
+.battleScene:before{content:var(--battle-boss,"");position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);font-size:min(68vw,520px);opacity:.10;filter:grayscale(.15) drop-shadow(0 12px 24px #000);pointer-events:none;z-index:0}
+.battleScene>.arena{--battle-boss:var(--boss-icon)}
+.battleScene .boardArea:after{content:var(--boss-icon,"");position:absolute;left:45%;top:55%;transform:translate(-50%,-50%);font-size:min(66vw,420px);opacity:.105;filter:drop-shadow(0 8px 18px #000);pointer-events:none;z-index:-1}
+@media(max-width:700px){.battleScene .boardArea:after{font-size:74vw;left:44%;top:55%;opacity:.11}.letters{background:rgba(12,18,19,.42)!important}.tile{background:linear-gradient(rgba(255,240,198,.92),rgba(220,182,110,.92))!important}}
+
+/* Mobile hero library: no horizontal overflow; active team is four readable vertical rows */
+.heroLibrary{overflow:hidden}
+.heroLibrary *{box-sizing:border-box}
+@media(max-width:560px){
+ .heroLibrary{padding:12px!important;margin:8px!important}
+ .libraryHead h2{font-size:2rem}.libraryHead p{margin:4px 0 8px}
+ .heroFilters{width:100%;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .heroFilters button{min-width:0;padding:8px 4px!important;font-size:.76rem}
+ .teamEditor{padding:10px!important;margin:12px 0 16px!important}
+ .teamEditor>p{font-size:.72rem;margin:5px 0 9px}
+ .teamSlots{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
+ .teamSlot{width:100%;min-width:0;min-height:62px!important;padding:6px!important;gap:7px!important}
+ .teamSlot .heroPortrait{width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;margin:0!important;border-radius:7px;overflow:hidden}
+ .teamSlot .heroPortrait span{font-size:26px!important;line-height:1!important}
+ .teamSlot .heroPortrait i{font-size:10px!important;right:2px!important;bottom:2px!important}
+ .teamSlot div:not(.heroPortrait){flex:1 1 auto!important;min-width:0!important}
+ .teamSlot b{font-size:.82rem!important}.teamSlot span,.teamSlot small{font-size:.58rem!important}
+ .teamSlot button{flex:0 0 auto;margin-left:auto!important;padding:5px 7px!important;font-size:.58rem!important}
+ .heroes{grid-template-columns:1fr!important;gap:8px!important}
+ .heroes .card{display:grid;grid-template-columns:74px minmax(0,1fr);column-gap:9px;padding:7px!important;min-width:0}
+ .heroes .card>.heroPortrait{grid-row:1/7;width:74px!important;height:74px!important;min-height:74px!important;margin:0!important;border-radius:7px;overflow:hidden}
+ .heroes .card>.heroPortrait span{font-size:42px!important}.heroes .card>.heroPortrait i{font-size:13px!important;right:3px!important;bottom:3px!important}
+ .heroes .heroCardTitle,.heroes .rarity,.heroes .abilityText,.heroes .card>p,.heroes .heroActions,.heroes .card>b{grid-column:2}
+ .heroes .heroCardTitle b{font-size:.82rem}.heroes .heroCardTitle span,.heroes .rarity{font-size:.58rem}.heroes .abilityText{font-size:.67rem;margin:3px 0}.heroes .card>p{font-size:.62rem;margin:2px 0}
+ .heroes .heroActions{grid-template-columns:1fr 1fr;gap:3px}.heroes .heroActions button{font-size:.52rem;padding:5px 2px}
+}
