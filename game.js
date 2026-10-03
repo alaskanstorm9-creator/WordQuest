@@ -304,7 +304,7 @@ function startWorldBoss(id){
  let rogueCount=teamClassCount("Rogue");fight.rogueBonusCount=rogueCount>=4?6:rogueCount>=2?2:0;fight.rogueBonusTiles=randomBonusTiles(fight.rogueBonusCount);
  let warriorCount=teamClassCount("Warrior");fight.warriorDamage=warriorCount>=4?10:warriorCount>=2?5:0;
  let clericCount=teamClassCount("Cleric");fight.clericExtraRerolls=clericCount>=2?1:0;
- selected=[];drawFight();startTimer();
+ initHeroAbilities();selected=[];drawFight();startTimer();
 }
 function worldBossIntel(){
  if(!fight?.worldBoss)return "";
@@ -424,13 +424,28 @@ function tutorialIntro(){
 function startTutorialFight(){
  stopTimer();
  fight={name:"Training Wisp",icon:"✨",type:"none",max:85,hp:85,disabled:"",used:new Set(),timeLeft:0,refreshes:0,streakLetter:"",streakCount:0,timeBoostUsed:true,tutorial:true};
- fight.mageTimeBonus=0;fight.rogueBonusCount=0;fight.rogueBonusTiles=new Set();fight.warriorDamage=0;fight.clericExtraRerolls=0;fight.clericGoldBonus=0;fight.letters=board();selected=[];drawFight();
+ fight.mageTimeBonus=0;fight.rogueBonusCount=0;fight.rogueBonusTiles=new Set();fight.warriorDamage=0;fight.clericExtraRerolls=0;fight.clericGoldBonus=0;fight.letters=board();initHeroAbilities();selected=[];drawFight();
 }
 function battle(){let b=boss(state.stage);$("#view").innerHTML=`<div class="panel"><h2 class="title">CHAPTER 1 — GREENVALE</h2><p class="title">Stage ${state.stage} / 15 • ${isBossStage(state.stage)?"Boss: 3:00":"Stage: 1:00"}</p><div class="stagegrid">${BOSSES.map((_,i)=>`<button class="${i+1===state.stage?"current":""}" ${i+1>state.stage?"disabled":""} data-stage="${i+1}">${i+1}</button>`).join("")}</div><div class="boss">${b.icon}</div><h2 class="title">${b.name}</h2><div class="traits"><b>Boss Intel</b><br>${traitText(b.type,b.cursedInitials||[],b.lengthResistance||{})}</div><div class="row"><button class="primary" id="start">START — ⚡5</button></div></div>`;$("#start").onclick=startFight;document.querySelectorAll("[data-stage]").forEach(x=>x.onclick=()=>{state.stage=+x.dataset.stage;save();battle()})}
 function teamClassCount(cls){return state.team.filter(id=>HEROES.find(h=>h.id===id)?.class===cls).length}
 function randomBonusTiles(count){let ids=[...Array(16).keys()];for(let i=ids.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}return new Set(ids.slice(0,count))}
-function startFight(){if(state.energy<5)return alert("Not enough Story Energy.");state.energy-=5;save();fight=boss(state.stage);fight.disabled="";fight.used=new Set();fight.timeLeft=stageSeconds(state.stage);fight.refreshes=0;fight.streakLetter="";fight.streakCount=0;fight.timeBoostUsed=false;let mageCount=teamClassCount("Mage");fight.mageTimeBonus=mageCount>=4?25:mageCount>=2?10:0;fight.timeLeft+=fight.mageTimeBonus;let rogueCount=teamClassCount("Rogue");fight.rogueBonusCount=rogueCount>=4?6:rogueCount>=2?2:0;fight.rogueBonusTiles=randomBonusTiles(fight.rogueBonusCount);let warriorCount=teamClassCount("Warrior");fight.warriorDamage=warriorCount>=4?10:warriorCount>=2?5:0;let clericCount=teamClassCount("Cleric");fight.clericExtraRerolls=clericCount>=2?1:0;fight.clericGoldBonus=clericCount>=4?.20:0;fight.letters=board();selected=[];drawFight();startTimer()}
+function startFight(){if(state.energy<5)return alert("Not enough Story Energy.");state.energy-=5;save();fight=boss(state.stage);fight.disabled="";fight.used=new Set();fight.timeLeft=stageSeconds(state.stage);fight.refreshes=0;fight.streakLetter="";fight.streakCount=0;fight.timeBoostUsed=false;let mageCount=teamClassCount("Mage");fight.mageTimeBonus=mageCount>=4?25:mageCount>=2?10:0;fight.timeLeft+=fight.mageTimeBonus;let rogueCount=teamClassCount("Rogue");fight.rogueBonusCount=rogueCount>=4?6:rogueCount>=2?2:0;fight.rogueBonusTiles=randomBonusTiles(fight.rogueBonusCount);let warriorCount=teamClassCount("Warrior");fight.warriorDamage=warriorCount>=4?10:warriorCount>=2?5:0;let clericCount=teamClassCount("Cleric");fight.clericExtraRerolls=clericCount>=2?1:0;fight.clericGoldBonus=clericCount>=4?.20:0;fight.letters=board();initHeroAbilities();selected=[];drawFight();startTimer()}
 function board(){let vowels="AAAAAAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEEEEIIIIIIIIIIIIOOOOOOOOOOUUUUU",consonants="BBBBCCCDDDDDDFFFFFFFFGGGGGHHHHHHJKLLLLLMMMMNNNNNNNNPPPPQRRRRRRRRRSSSSSSSSTTTTTTTTTVVWWXYYZ";let a=[];for(let i=0;i<6;i++)a.push(vowels[Math.floor(Math.random()*vowels.length)]);for(let i=0;i<10;i++)a.push(consonants[Math.floor(Math.random()*consonants.length)]);for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const HERO_CHARGE_NEED={Common:5,Uncommon:4,Rare:3,Ultra:2};
+function initHeroAbilities(){
+ fight.heroCharge={};fight.heroArmed=null;
+ state.team.forEach(id=>fight.heroCharge[id]=0);
+}
+function heroAbilityMatches(h,w){return primaryTriggers(h,w)}
+function chargeHeroAbilities(w){
+ state.team.forEach(id=>{const h=HEROES.find(x=>x.id===id);if(!h)return;if(heroAbilityMatches(h,w)){const need=HERO_CHARGE_NEED[h.rarity]||5;fight.heroCharge[id]=Math.min(need,(fight.heroCharge[id]||0)+1)}});
+}
+function armHeroAbility(id){
+ const h=HEROES.find(x=>x.id===id);if(!h||!fight)return;
+ const need=HERO_CHARGE_NEED[h.rarity]||5;
+ if((fight.heroCharge?.[id]||0)<need)return;
+ fight.heroArmed=fight.heroArmed===id?null:id;drawFight();
+}
 function activeSynergyText(){
   let parts=[];
   if(fight.mageTimeBonus)parts.push(`🔮 Mage +${fight.mageTimeBonus}s`);
@@ -445,9 +460,9 @@ function drawFight(){
   const strikeWord=fight.lastStrike?.word||"",strikeDamage=fight.lastStrike?.damage||0,strikeTier=fight.lastStrike?.tier||"normal",strikeHeroes=fight.lastStrike?.heroes||[];
   fight.hitFlash=false;
   const teamCards=state.team.map(id=>{
-    const h=HEROES.find(x=>x.id===id),o=state.owned[id];
-    if(!h||!o)return "";
-    return `<div class="combatHero hero-${h.class.toLowerCase()} ${state.damageDisplay!=="clean"&&strikeHeroes.some(x=>x.id===h.id)?"passiveTriggered":""}"><div class="heroIcon"><span>${h.icon}</span><i></i></div><div><b>${h.name}</b><small>${h.class||"Hero"} • Lv ${o.level}</small><div class="abilityBar"><i style="width:0%"></i></div></div></div>`;
+    const h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return "";
+    const need=HERO_CHARGE_NEED[h.rarity]||5,charge=fight.heroCharge?.[id]||0,ready=charge>=need,armed=fight.heroArmed===id;
+    return `<button class="combatHero hero-${h.class.toLowerCase()} ${ready?"abilityReady":""} ${armed?"abilityArmed":""} ${state.damageDisplay!=="clean"&&strikeHeroes.some(x=>x.id===h.id)?"passiveTriggered":""}" data-hero-ability="${id}" ${ready?"":"disabled"}><div class="heroIcon"><span>${h.icon}</span><i></i></div><b>${h.name.split(" ")[0]}</b><small>${armed?"×2 NEXT":ready?"READY":charge+"/"+need}</small><div class="abilityBar"><i style="width:${Math.min(100,charge/need*100)}%"></i></div></button>`;
   }).join("");
   $("#view").innerHTML=`<div class="battleScene ${state.damageDisplay==="clean"?"cleanCombat":""}">
     <div class="battleTop">
@@ -461,13 +476,12 @@ function drawFight(){
     </div>
     <div class="synergyBanner">${fight.tutorial?"Pip • Rogue &nbsp;|&nbsp; Mira • Mage &nbsp;|&nbsp; Aurelia • Warrior &nbsp;|&nbsp; Lyra • Cleric — balanced teams have no same-class synergy":activeSynergyText()}</div>
     <div class="battleBody">
-      <div class="teamRail">${teamCards}</div>
       <div class="boardArea">
         <div class="streak">🔥 Letter Streak: ${fight.streakCount>1?`${fight.streakLetter} ×${fight.streakCount} • +${(fight.streakCount-1)*10}% damage`:"Start consecutive words with the same letter"}</div>
         <div class="word" id="word"></div>
         ${fight.worldBoss?`<div class="worldBossScoreBar combatHpBar"><small>DAMAGE THIS ATTEMPT</small><strong>${(fight.score||0).toLocaleString()}</strong></div>`:`<div class="enemyHp combatHpBar"><div style="width:${Math.max(0,fight.hp/fight.max*100)}%"></div><span>${Math.max(0,fight.hp)} / ${fight.max} HP</span></div>`}
         <div class="row actionRow combatPrimaryActions"><button class="gold" id="clear">CLEAR</button><button class="primary strikeBtn" id="submit">⚔ STRIKE</button></div>
-        <div class="letters" id="letterBoard">${fight.letters.map((l,i)=>`<button class="tile ${fight.rogueBonusTiles?.has(i)?"bonusTile":""}" data-i="${i}" ${l===fight.disabled?"disabled":""}><span>${l}</span>${fight.rogueBonusTiles?.has(i)?`<small>×2</small>`:""}</button>`).join("")}</div>
+        <div class="combatGrid"><div class="letters" id="letterBoard">${fight.letters.map((l,i)=>`<button class="tile ${fight.rogueBonusTiles?.has(i)?"bonusTile":""}" data-i="${i}" ${l===fight.disabled?"disabled":""}><span>${l}</span>${fight.rogueBonusTiles?.has(i)?`<small>×2</small>`:""}</button>`).join("")}</div><div class="heroAbilityRail">${teamCards}</div></div>
         <div class="damage ${strikeWord?"damagePop":""}" id="damage">${strikeWord?`⚔ ${strikeWord} — ${strikeDamage.toLocaleString()} DAMAGE!${state.damageDisplay!=="clean"&&strikeHeroes.length?` <span class="passiveCallout">✦ ${strikeHeroes.map(x=>x.icon+" "+x.name).join(" • ")} PASSIVE</span>`:""}`:""}</div>
         <div class="row refreshRow"><button class="gold" id="refresh">🔄 NEW LETTERS — ${fight.refreshes<(1+(fight.clericExtraRerolls||0))?"FREE":"💎"+REFRESH_GEM_COST}</button></div>
         <p class="notice" id="notice">Tap letters or drag your finger across them to build your word.</p>
@@ -478,6 +492,7 @@ function drawFight(){
     </div>
   </div>`;
   bindLetterInput();
+  document.querySelectorAll("[data-hero-ability]").forEach(x=>x.onclick=()=>armHeroAbility(x.dataset.heroAbility));
   $("#clear").onclick=()=>{selected=[];syncWord()};
   $("#refresh").onclick=refreshLetters;
   $("#submit").onclick=strike;
@@ -520,7 +535,7 @@ else{fight.streakLetter=first;fight.streakCount=1}
 let streakBonus=1+Math.max(0,fight.streakCount-1)*0.10;
 let rogueHits=selected.filter(i=>fight.rogueBonusTiles?.has(i)).length;
 let rogueBonus=Math.pow(2,rogueHits);
-let d=baseDamage(w.length);if(fight.type==="cursedInitials"&&fight.cursedInitials?.includes(w[0]))d*=.5;let lengthResist=w.length<=5?(fight.lengthResistance?.[w.length]||0):0;if(lengthResist)d*=1-lengthResist;let triggeredHeroes=[];state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;let hm=heroMultiplier(h,w,o.copies);if(hm>1)triggeredHeroes.push({id:h.id,name:h.name,icon:h.icon});d*=hm});d=applyWorldBossMechanic(w,d);d=Math.round((Math.round(d*streakBonus*rogueBonus)+(fight.warriorDamage||0))*accountDamageMultiplier());if(fight.worldBoss){fight.score=(fight.score||0)+d;advanceWorldBoss(w)}else fight.hp-=d;fight.lastStrike={word:w,damage:d,tier:w.length>=10?"legendary":w.length>=7?"epic":w.length===6?"power":"normal",heroes:triggeredHeroes};fight.hitFlash=true;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!${fight.streakCount>1?` 🔥 ${first} STREAK ×${fight.streakCount} (+${(fight.streakCount-1)*10}%)`:""}`;selected=[];save();if(!fight.worldBoss&&fight.hp<=0)return victory();drawFight()}
+let d=baseDamage(w.length);let armedHero=fight.heroArmed?HEROES.find(x=>x.id===fight.heroArmed):null,abilityDoubled=!!(armedHero&&heroAbilityMatches(armedHero,w));if(abilityDoubled)d*=2;if(fight.type==="cursedInitials"&&fight.cursedInitials?.includes(w[0]))d*=.5;let lengthResist=w.length<=5?(fight.lengthResistance?.[w.length]||0):0;if(lengthResist)d*=1-lengthResist;let triggeredHeroes=[];state.team.forEach(id=>{let h=HEROES.find(x=>x.id===id),o=state.owned[id];if(!h||!o)return;let hm=heroMultiplier(h,w,o.copies);if(hm>1)triggeredHeroes.push({id:h.id,name:h.name,icon:h.icon});d*=hm});d=applyWorldBossMechanic(w,d);if(abilityDoubled){fight.heroCharge[armedHero.id]=0;fight.heroArmed=null}chargeHeroAbilities(w);d=Math.round((Math.round(d*streakBonus*rogueBonus)+(fight.warriorDamage||0))*accountDamageMultiplier());if(fight.worldBoss){fight.score=(fight.score||0)+d;advanceWorldBoss(w)}else fight.hp-=d;fight.lastStrike={word:w,damage:d,tier:w.length>=10?"legendary":w.length>=7?"epic":w.length===6?"power":"normal",heroes:triggeredHeroes};fight.hitFlash=true;$("#damage").textContent=`⚔ ${w} — ${d} DAMAGE!${fight.streakCount>1?` 🔥 ${first} STREAK ×${fight.streakCount} (+${(fight.streakCount-1)*10}%)`:""}`;selected=[];save();if(!fight.worldBoss&&fight.hp<=0)return victory();drawFight()}
 function victory(){stopTimer();if(fight?.tutorial){state.tutorialComplete=true;save();fight=null;selected=[];$("#view").innerHTML=`<div class="panel tutorialVictory"><h2 class="title">THE CONCORD IS READY!</h2><div class="boss">🏆</div><p class="title">You learned the core WordQuest battle loop with <b>Pip, Mira, Aurelia, and Lyra</b>.</p><p class="title">Your first real expedition is waiting in Greenvale. Story battles now use Energy and a timer.</p><div class="row"><button class="primary" id="tutorialContinue">ENTER GREENVALE</button><button class="gold" id="tutorialReview">REVIEW TUTORIAL</button></div></div>`;$("#tutorialContinue").onclick=battle;$("#tutorialReview").onclick=tutorial;return}let reward=40+state.stage*10;if(fight.clericGoldBonus)reward=Math.round(reward*(1+fight.clericGoldBonus));state.coins+=reward;state.bestiary=[...new Set([...state.bestiary,fight.name])];let completed=state.stage;
 let storyXp=120+completed*12,levelUps=grantAccountXp(storyXp,"story");
 let energyReward=[5,10,15].includes(completed)?25:0;
