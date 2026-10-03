@@ -333,3 +333,10 @@ body{background:radial-gradient(circle at 50% 0,#244f55,#07151d 70%);margin:0}.g
 .heroPortrait.rarity-rare{box-shadow:inset 0 0 0 2px #248cff}
 .heroPortrait.rarity-ultra{box-shadow:inset 0 0 0 2px #c743ff,0 0 10px #9b2dff88}
 .heroPortrait.rarity-ultra>img{filter:saturate(1.12) contrast(1.04)}
+
+/* Hero lore is opt-in: compact roster first, biography on hero detail. */
+.heroLore{display:none!important}.heroStoryLink{width:max-content;min-height:0!important;padding:4px 8px!important;margin:3px 0;border:1px solid #8d7138;background:#0a1a22;color:#e7c873;font:700 .58rem Georgia,serif;letter-spacing:.05em}
+.heroStoryLink:hover{border-color:#e7c873}
+.heroBiography{max-width:720px;line-height:1.45;color:#e8dfc9}
+.heroStoryMeta{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}.heroStoryMeta span{border:1px solid #7d6534;border-radius:999px;padding:4px 8px;font-size:.65rem;color:#d7bd78;background:#07161dbd}
+@media(max-width:560px){.heroStoryLink{font-size:.5rem;padding:3px 6px!important}.heroBiography{font-size:.72rem!important;line-height:1.35}.heroStoryMeta span{font-size:.55rem}}
