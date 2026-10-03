@@ -455,7 +455,6 @@ function drawFight(){
       <div class="enemyName">${fight.name}</div>
       <div class="combatTimer">${fight.tutorial?"∞ NO TIME LIMIT":`⏱ <span id="timer">${formatTime(fight.timeLeft)}</span>`}</div>
     </div>
-    ${fight.worldBoss?`<div class="worldBossScoreBar"><small>DAMAGE THIS ATTEMPT</small><strong>${(fight.score||0).toLocaleString()}</strong></div>`:`<div class="enemyHp"><div style="width:${Math.max(0,fight.hp/fight.max*100)}%"></div><span>${Math.max(0,fight.hp)} / ${fight.max} HP</span></div>`}
     <div class="arena">
       <div class="bossArt${hitClass} ${fight.worldBoss?"calamityBoss":""}"><span>${fight.icon}</span><i></i>${strikeWord&&state.damageDisplay!=="clean"?`<div class="floatingDamage damage-${strikeTier}"><strong>-${strikeDamage.toLocaleString()}</strong><small>${strikeTier==="legendary"?"LEGENDARY WORD!":strikeTier==="epic"?"MIGHTY WORD!":strikeTier==="power"?"POWER WORD":""}</small></div>`:""}</div>
       <div class="bossIntel"><b>${fight.tutorial?"Training Encounter":"Boss Intel"}</b><br>${fight.tutorial?"Practice building words and watch how each starter hero contributes. There is no time pressure.":fight.worldBoss?worldBossIntel():traitText(fight.type,fight.cursedInitials||[],fight.lengthResistance||{})} ${fight.disabled?`<strong>Disabled: ${fight.disabled}</strong>`:""}</div>
@@ -466,6 +465,7 @@ function drawFight(){
       <div class="boardArea">
         <div class="streak">🔥 Letter Streak: ${fight.streakCount>1?`${fight.streakLetter} ×${fight.streakCount} • +${(fight.streakCount-1)*10}% damage`:"Start consecutive words with the same letter"}</div>
         <div class="word" id="word"></div>
+        ${fight.worldBoss?`<div class="worldBossScoreBar combatHpBar"><small>DAMAGE THIS ATTEMPT</small><strong>${(fight.score||0).toLocaleString()}</strong></div>`:`<div class="enemyHp combatHpBar"><div style="width:${Math.max(0,fight.hp/fight.max*100)}%"></div><span>${Math.max(0,fight.hp)} / ${fight.max} HP</span></div>`}
         <div class="row actionRow combatPrimaryActions"><button class="gold" id="clear">CLEAR</button><button class="primary strikeBtn" id="submit">⚔ STRIKE</button></div>
         <div class="letters" id="letterBoard">${fight.letters.map((l,i)=>`<button class="tile ${fight.rogueBonusTiles?.has(i)?"bonusTile":""}" data-i="${i}" ${l===fight.disabled?"disabled":""}><span>${l}</span>${fight.rogueBonusTiles?.has(i)?`<small>×2</small>`:""}</button>`).join("")}</div>
         <div class="damage ${strikeWord?"damagePop":""}" id="damage">${strikeWord?`⚔ ${strikeWord} — ${strikeDamage.toLocaleString()} DAMAGE!${state.damageDisplay!=="clean"&&strikeHeroes.length?` <span class="passiveCallout">✦ ${strikeHeroes.map(x=>x.icon+" "+x.name).join(" • ")} PASSIVE</span>`:""}`:""}</div>
